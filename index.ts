@@ -28,3 +28,5 @@ async function main() {
 if (require.main === module) {
   void main();
 }
+
+export { extract };

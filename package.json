@@ -4,7 +4,10 @@
   "description": "Translate Wolf RPG games.",
   "main": "dist/index.js",
   "scripts": {
-    "start": "ts-node index.ts",
+    "start": "node ./dist/index.js",
+    "dev": "ts-node index.ts",
+    "build": "tsc",
+    "installdeps": "npm i -g typescript @types/node",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -15,14 +18,13 @@
   "author": "KCFindstr",
   "license": "GPL-3.0",
   "dependencies": {
-    "colors": "^1.4.0",
+    "@types/node": "^17.0.12",
     "command-line-args": "^5.2.0",
     "iconv-lite": "^0.6.3"
   },
   "devDependencies": {
     "@types/command-line-args": "^5.2.0",
     "@types/inquirer": "^7.3.3",
-    "@types/node": "^17.0.12",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "eslint": "^8.7.0",
