@@ -1,0 +1,363 @@
+import { BufferStream } from '../buffer-stream';
+import { WOLF_MAP } from '../constants';
+import { FileCoder } from './file-coder';
+import { ISerializable } from './interfaces';
+import { RouteCommand } from './route-command';
+
+export class WolfCommand implements ISerializable {
+  needtrans = false;
+
+  constructor(
+    public cid: number,
+    public args: number[],
+    public stringArgs: string[],
+    public indent: number,
+  ) {}
+
+  serialize(stream: BufferStream): void {
+    stream.appendByte(this.args.length + 1);
+    stream.appendInt(this.cid);
+    for (const arg of this.args) {
+      stream.appendInt(arg);
+    }
+    stream.appendByte(this.indent);
+    stream.appendByte(this.stringArgs.length);
+    for (const arg of this.stringArgs) {
+      stream.appendString(arg);
+    }
+    this.writeTeminator(stream);
+  }
+
+  writeTeminator(stream: BufferStream) {
+    stream.appendByte(0);
+  }
+}
+
+export class SingleStringArgCommand extends WolfCommand {
+  get text() {
+    return this.stringArgs.length > 0 ? this.stringArgs[0] : '';
+  }
+  set text(value: string) {
+    if (this.stringArgs.length > 0) {
+      this.stringArgs[0] = value;
+    } else {
+      this.stringArgs.push(value);
+    }
+  }
+}
+
+export class BlankCommand extends WolfCommand {}
+
+export class CheckpointCommand extends WolfCommand {}
+
+export class MessageCommand extends SingleStringArgCommand {}
+
+export class ChoicesCommand extends WolfCommand {
+  get choices() {
+    return this.stringArgs;
+  }
+}
+
+export class CommentCommand extends SingleStringArgCommand {}
+
+export class ForceStopMessageCommand extends WolfCommand {}
+
+export class DebugMessageCommand extends SingleStringArgCommand {}
+
+export class ClearDebugTextCommand extends WolfCommand {}
+
+export class VariableConditionCommand extends WolfCommand {}
+
+export class StringConditionCommand extends WolfCommand {}
+
+export class SetVariableCommand extends WolfCommand {}
+
+export class SetStringCommand extends SingleStringArgCommand {}
+
+export class InputKeyCommand extends WolfCommand {}
+
+export class SetVariableExCommand extends WolfCommand {}
+
+export class AutoInputCommand extends WolfCommand {}
+
+export class BanInputCommand extends WolfCommand {}
+
+export class TeleportCommand extends WolfCommand {}
+
+export class SoundCommand extends WolfCommand {}
+
+export enum PictureCommandType {
+  Invalid = -1,
+  File = 0,
+  FileString = 1,
+  Text = 2,
+  WindowFile = 3,
+  WindowString = 4,
+}
+export class PictureCommand extends WolfCommand {
+  get type(): PictureCommandType {
+    const typ = (this.args[0] >> 4) & 0x07;
+    if (typ <= PictureCommandType.WindowString) {
+      return typ as PictureCommandType;
+    }
+    return PictureCommandType.Invalid;
+  }
+
+  get num() {
+    return this.args[1];
+  }
+
+  set num(value: number) {
+    this.args[1] = value;
+  }
+
+  get text() {
+    if (this.type !== PictureCommandType.Text) {
+      throw new Error(`Picture type ${this.type} does not have text`);
+    }
+    return this.stringArgs.length > 0 ? this.stringArgs[0] : '';
+  }
+
+  set text(value: string) {
+    if (this.type !== PictureCommandType.Text) {
+      throw new Error(`Picture type ${this.type} does not have text`);
+    }
+    if (this.stringArgs.length > 0) {
+      this.stringArgs[0] = value;
+    } else {
+      this.stringArgs.push(value);
+    }
+  }
+
+  get filename() {
+    if (
+      this.type !== PictureCommandType.File &&
+      this.type !== PictureCommandType.WindowFile
+    ) {
+      throw new Error(`Picture type ${this.type} does not have filename`);
+    }
+    return this.stringArgs[0];
+  }
+
+  set filename(value: string) {
+    if (
+      this.type !== PictureCommandType.File &&
+      this.type !== PictureCommandType.WindowFile
+    ) {
+      throw new Error(`Picture type ${this.type} does not have filename`);
+    }
+    this.stringArgs[0] = value;
+  }
+}
+
+export class ChangeColorCommand extends WolfCommand {}
+
+export class SetTransitionCommand extends WolfCommand {}
+
+export class PrepareTransitionCommand extends WolfCommand {}
+
+export class ExecuteTransitionCommand extends WolfCommand {}
+
+export class StartLoopCommand extends WolfCommand {}
+
+export class BreakLoopCommand extends WolfCommand {}
+
+export class BreakEventCommand extends WolfCommand {}
+
+export class EraseEventCommand extends WolfCommand {}
+
+export class ReturnToTitleCommand extends WolfCommand {}
+
+export class EndGameCommand extends WolfCommand {}
+
+export class LoopToStartCommand extends WolfCommand {}
+
+export class StopNonPicCommand extends WolfCommand {}
+
+export class ResumeNonPicCommand extends WolfCommand {}
+
+export class LoopTimesCommand extends WolfCommand {}
+
+export class WaitCommand extends WolfCommand {}
+
+export class MoveCommand extends WolfCommand {
+  unknown: Buffer;
+  flags: number;
+  routeCount: number;
+  routes: RouteCommand[];
+
+  constructor(
+    cid: number,
+    args: number[],
+    stringArgs: string[],
+    indent: number,
+    file?: FileCoder,
+  ) {
+    super(cid, args, stringArgs, indent);
+    this.unknown = file.readBytes(5);
+    this.flags = file.readByte();
+    this.routeCount = file.readUIntLE();
+    this.routes = [];
+    for (let i = 0; i < this.routeCount; i++) {
+      this.routes.push(new RouteCommand(file));
+    }
+  }
+
+  override writeTeminator(stream: BufferStream): void {
+    stream.appendByte(WOLF_MAP.MOVE_COMMAND_TERMINATOR);
+    stream.appendBuffer(this.unknown);
+    stream.appendByte(this.flags);
+    stream.appendInt(this.routeCount);
+    for (const route of this.routes) {
+      route.serialize(stream);
+    }
+  }
+}
+
+export class WaitForMoveCommand extends WolfCommand {}
+
+export class CommonEventCommand extends WolfCommand {}
+
+export class CommonEventReserveCommand extends WolfCommand {}
+
+export class SetLabelCommand extends WolfCommand {}
+
+export class JumpLabelCommand extends WolfCommand {}
+
+export class SaveLoadCommand extends WolfCommand {}
+
+export class LoadGameCommand extends WolfCommand {}
+
+export class SaveGameCommand extends WolfCommand {}
+
+export class MoveDuringEventOnCommand extends WolfCommand {}
+
+export class MoveDuringEventOffCommand extends WolfCommand {}
+
+export class ChipCommand extends WolfCommand {}
+
+export class ChipSetCommand extends WolfCommand {}
+
+export class ChipOverwriteCommand extends WolfCommand {}
+
+export class DatabaseCommand extends WolfCommand {}
+
+export class ImportDatabaseCommand extends WolfCommand {}
+
+export class PartyCommand extends WolfCommand {}
+
+export class MapEffectCommand extends WolfCommand {}
+
+export class ScrollScreenCommand extends WolfCommand {}
+
+export class EffectCommand extends WolfCommand {}
+
+export class CommonEventByNameCommand extends WolfCommand {}
+
+export class ChoiceCaseCommand extends WolfCommand {}
+
+export class SpecialChoiceCaseCommand extends WolfCommand {}
+
+export class ElseCaseCommand extends WolfCommand {}
+
+export class CancelCaseCommand extends WolfCommand {}
+
+export class LoopEndCommand extends WolfCommand {}
+
+export class BranchEndCommand extends WolfCommand {}
+
+const CID_TO_CLASS: Record<
+  number,
+  {
+    new (
+      cid: number,
+      args: number[],
+      stringArgs: string[],
+      indent: number,
+    ): WolfCommand;
+  }
+> = {
+  0: BlankCommand,
+  99: CheckpointCommand,
+  101: MessageCommand,
+  102: ChoicesCommand,
+  103: CommentCommand,
+  105: ForceStopMessageCommand,
+  106: DebugMessageCommand,
+  107: ClearDebugTextCommand,
+  111: VariableConditionCommand,
+  112: StringConditionCommand,
+  121: SetVariableCommand,
+  122: SetStringCommand,
+  123: InputKeyCommand,
+  124: SetVariableExCommand,
+  125: AutoInputCommand,
+  126: BanInputCommand,
+  130: TeleportCommand,
+  140: SoundCommand,
+  150: PictureCommand,
+  151: ChangeColorCommand,
+  160: SetTransitionCommand,
+  161: PrepareTransitionCommand,
+  162: ExecuteTransitionCommand,
+  170: StartLoopCommand,
+  171: BreakLoopCommand,
+  172: BreakEventCommand,
+  173: EraseEventCommand,
+  174: ReturnToTitleCommand,
+  175: EndGameCommand,
+  176: StartLoopCommand,
+  177: StopNonPicCommand,
+  178: ResumeNonPicCommand,
+  179: LoopTimesCommand,
+  180: WaitCommand,
+  201: MoveCommand, // special case
+  202: WaitForMoveCommand,
+  210: CommonEventCommand,
+  211: CommonEventReserveCommand,
+  212: SetLabelCommand,
+  213: JumpLabelCommand,
+  220: SaveLoadCommand,
+  221: LoadGameCommand,
+  222: SaveGameCommand,
+  230: MoveDuringEventOnCommand,
+  231: MoveDuringEventOffCommand,
+  240: ChipCommand,
+  241: ChipSetCommand,
+  250: DatabaseCommand,
+  251: ImportDatabaseCommand,
+  270: PartyCommand,
+  280: MapEffectCommand,
+  281: ScrollScreenCommand,
+  290: EffectCommand,
+  300: CommonEventByNameCommand,
+  401: ChoiceCaseCommand,
+  402: SpecialChoiceCaseCommand,
+  420: ElseCaseCommand,
+  421: CancelCaseCommand,
+  498: LoopEndCommand,
+  499: BranchEndCommand,
+};
+
+export function createCommand(file: FileCoder): WolfCommand {
+  const argCount = file.readByte();
+  const cid = file.readUIntLE();
+  const args = [];
+  for (let i = 0; i < argCount - 1; i++) {
+    args.push(file.readUIntLE());
+  }
+  const indent = file.readByte();
+  const stringArgCount = file.readByte();
+  const stringArgs = [];
+  for (let i = 0; i < stringArgCount; i++) {
+    stringArgs.push(file.readString());
+  }
+  const terminator = file.readByte();
+  if (terminator === WOLF_MAP.MOVE_COMMAND_TERMINATOR) {
+    return new MoveCommand(cid, args, stringArgs, indent, file);
+  } else if (terminator === WOLF_MAP.COMMAND_TERMINATOR) {
+    const commandClass = CID_TO_CLASS[cid];
+    file.assert(commandClass !== undefined, `Unknown command ${cid}`);
+    return new commandClass(cid, args, stringArgs, indent);
+  }
+}
