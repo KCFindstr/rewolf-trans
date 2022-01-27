@@ -1,7 +1,7 @@
 import { WolfCommand } from '../archive/wolf-command';
 import { WolfEvent } from '../archive/wolf-events';
 import { CTX } from '../constants';
-import { safeJoin } from './escape-string';
+import { safeJoin } from './string-utils';
 import { TranslationContext } from './translation-context';
 
 export class CommonEventContext extends TranslationContext {

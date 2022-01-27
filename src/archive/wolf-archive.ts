@@ -1,3 +1,4 @@
+import { TranslationDict } from '../translation/translation-dict';
 import { FileCoder } from './file-coder';
 
 export abstract class WolfArchive {
@@ -20,4 +21,9 @@ export abstract class WolfArchive {
   }
 
   abstract parse(): void;
+  abstract generatePatch(
+    dataDir: string,
+    patchDir: string,
+    dict: TranslationDict,
+  ): void;
 }

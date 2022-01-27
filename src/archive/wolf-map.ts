@@ -6,6 +6,7 @@ import { bufferStartsWith, ensureDir } from '../util';
 import { ISerializable } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfEvent } from './wolf-events';
+import { TranslationDict } from '../translation/translation-dict';
 
 export enum WolfArchiveType {
   Invalid,
@@ -91,5 +92,13 @@ export class WolfMap extends WolfArchive implements ISerializable {
     this.serialize(stream);
     ensureDir(path.dirname(filepath));
     fs.writeFileSync(filepath, stream.buffer);
+  }
+
+  override generatePatch(
+    _dataDir: string,
+    _patchDir: string,
+    _dict: TranslationDict,
+  ): void {
+    throw new Error('Method not implemented.');
   }
 }

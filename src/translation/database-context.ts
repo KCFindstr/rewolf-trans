@@ -1,6 +1,6 @@
 import { WolfData, WolfField, WolfType } from '../archive/wolf-type';
 import { CTX } from '../constants';
-import { safeJoin } from './escape-string';
+import { safeJoin } from './string-utils';
 import { TranslationContext } from './translation-context';
 
 export class DatabaseContext extends TranslationContext {

@@ -2,24 +2,11 @@ import { CTX } from '../constants';
 import { ICustomKey, IString } from '../interfaces';
 import { CommonEventContext } from './common-event-context';
 import { DatabaseContext } from './database-context';
-import { safeSplit } from './escape-string';
+import { safeSplit } from './string-utils';
 import { GameDatContext } from './game-dat-context';
 import { MapEventContext } from './map-event-context';
 
 export abstract class TranslationContext implements ICustomKey, IString {
-  protected readonly context_: string[] = [];
-
-  enter(name: string) {
-    this.context_.push(name);
-  }
-
-  leave() {
-    if (this.context_.length <= 0) {
-      throw new Error('Leaving empty context');
-    }
-    this.context_.pop();
-  }
-
   static FromString(str: string): TranslationContext {
     const colonIndex = str.indexOf(':');
     if (colonIndex < 0) {

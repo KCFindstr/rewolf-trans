@@ -1,6 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_CE } from '../constants';
 import { ISerializable } from '../interfaces';
+import { TranslationDict } from '../translation/translation-dict';
 import { WolfArchive } from './wolf-archive';
 import { WolfCommonEvent } from './wolf-common-event';
 
@@ -27,5 +28,13 @@ export class WolfCE extends WolfArchive implements ISerializable {
 
   get events() {
     return this.events_;
+  }
+
+  override generatePatch(
+    _dataDir: string,
+    _patchDir: string,
+    _dict: TranslationDict,
+  ): void {
+    throw new Error('Method not implemented.');
   }
 }

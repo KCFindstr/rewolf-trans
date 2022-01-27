@@ -1,23 +1,20 @@
 import { IString } from '../interfaces';
+import * as path from 'path';
 
 const SEPARATOR = '/';
-
-export function escapeMultiline(str: string) {
-  return str.replace(/\r/g, '\\r');
-}
-
-export function unescapeMultiline(str: string) {
-  return str.replace(/\\r/g, '\r');
-}
+const MULTILINE_ESCAPE = '>#';
 
 export function escapeString(
   str: string,
   escapeChars: string = SEPARATOR,
+  escapeNewline = true,
 ): string {
   const strArr = [];
   for (const char of str) {
     if (char === '\n') {
-      strArr.push('\\n');
+      strArr.push(escapeNewline ? '\\n' : '\n');
+    } else if (char === '\0') {
+      strArr.push('\\0');
     } else if (char === '\r') {
       strArr.push('\\r');
     } else if (char === '\t') {
@@ -44,6 +41,8 @@ export function unescapeString(
       const nextChar = str[++i];
       if (nextChar === 'n') {
         strArr.push('\n');
+      } else if (nextChar === '0') {
+        strArr.push('\0');
       } else if (nextChar === 'r') {
         strArr.push('\r');
       } else if (nextChar === 't') {
@@ -88,7 +87,29 @@ export function safeSplit(str: string, separators = SEPARATOR): string[] {
 export function escapePath(str: string) {
   return str.replace(/[\0/\\?%*:|"<>]/g, '');
 }
+export function escapeMultiline(str: string) {
+  return escapeString(str, MULTILINE_ESCAPE, false);
+}
+
+export function unescapeMultiline(str: string) {
+  return unescapeString(str, MULTILINE_ESCAPE);
+}
 
 export function isTranslatable(str: string) {
   return str.trim().length > 0;
+}
+
+export function getPatchDirPath(dir: string, dataDir: string, pathDir: string) {
+  const relative = path.relative(dataDir, dir);
+  return path.join(pathDir, relative);
+}
+
+export function getPatchFilePath(
+  original: string,
+  dataDir: string,
+  pathDir: string,
+) {
+  const dir = getPatchDirPath(path.dirname(original), dataDir, pathDir);
+  const filename = path.parse(original).name;
+  return path.join(dir, filename + '.txt');
 }

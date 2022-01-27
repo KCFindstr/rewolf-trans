@@ -7,6 +7,7 @@ import { FileCoder } from './file-coder';
 import { IProjectData } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfType } from './wolf-type';
+import { TranslationDict } from '../translation/translation-dict';
 
 export class WolfDatabase extends WolfArchive implements IProjectData {
   protected project_: FileCoder;
@@ -87,5 +88,13 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     fs.writeFileSync(projectPath, projectBuffer);
     ensureDir(path.dirname(dataPath));
     fs.writeFileSync(dataPath, dataBuffer);
+  }
+
+  override generatePatch(
+    _dataDir: string,
+    _patchDir: string,
+    _dict: TranslationDict,
+  ): void {
+    throw new Error('Method not implemented.');
   }
 }

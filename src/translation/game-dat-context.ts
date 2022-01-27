@@ -1,5 +1,5 @@
 import { CTX } from '../constants';
-import { safeJoin } from './escape-string';
+import { safeJoin } from './string-utils';
 import { TranslationContext } from './translation-context';
 
 export class GameDatContext extends TranslationContext {
