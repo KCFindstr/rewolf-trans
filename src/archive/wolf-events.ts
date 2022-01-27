@@ -10,7 +10,6 @@ export class WolfEvent implements ISerializable {
   name: string;
   x: number;
   y: number;
-  pageCount: number;
   pages: WolfEventPage[];
 
   constructor(readonly file: FileCoder) {
@@ -20,7 +19,7 @@ export class WolfEvent implements ISerializable {
     this.name = this.file.readString();
     this.x = this.file.readUIntLE();
     this.y = this.file.readUIntLE();
-    this.pageCount = this.file.readUIntLE();
+    const pageCount = this.file.readUIntLE();
     this.file.expect(WOLF_MAP.EVENT_END);
 
     // Read pages
@@ -34,8 +33,8 @@ export class WolfEvent implements ISerializable {
       `Unexpected page indicator ${indicator}`,
     );
     this.file.assert(
-      this.pageCount === this.pages.length,
-      `Expected ${this.pageCount} pages but got ${this.pages.length}`,
+      pageCount === this.pages.length,
+      `Expected ${pageCount} pages but got ${this.pages.length}`,
     );
   }
 
@@ -45,7 +44,7 @@ export class WolfEvent implements ISerializable {
     stream.appendString(this.name);
     stream.appendInt(this.x);
     stream.appendInt(this.y);
-    stream.appendInt(this.pageCount);
+    stream.appendInt(this.pages.length);
     stream.appendBuffer(WOLF_MAP.EVENT_END);
     for (const page of this.pages) {
       stream.appendByte(WOLF_MAP.PAGE_INDICATOR);
@@ -66,9 +65,7 @@ export class WolfEventPage implements ISerializable {
   movement: Buffer;
   flags: number;
   routeFlags: number;
-  routeCount: number;
   routes: RouteCommand[];
-  commandCount: number;
   commands: WolfCommand[];
   shadowGraphicNum: number;
   collisionWidth: number;
@@ -87,16 +84,16 @@ export class WolfEventPage implements ISerializable {
     this.flags = this.file.readByte();
     // Read routes
     this.routeFlags = this.file.readByte();
-    this.routeCount = this.file.readUIntLE();
+    const routeCount = this.file.readUIntLE();
     this.routes = [];
-    for (let i = 0; i < this.routeCount; i++) {
+    for (let i = 0; i < routeCount; i++) {
       this.routes.push(new RouteCommand(this.file));
     }
 
     // Read commands
-    this.commandCount = this.file.readUIntLE();
+    const commandCount = this.file.readUIntLE();
     this.commands = [];
-    for (let i = 0; i < this.commandCount; i++) {
+    for (let i = 0; i < commandCount; i++) {
       this.commands.push(createCommand(this.file));
     }
     this.file.expect(WOLF_MAP.COMMAND_END);
@@ -124,11 +121,11 @@ export class WolfEventPage implements ISerializable {
     stream.appendBuffer(this.movement);
     stream.appendByte(this.flags);
     stream.appendByte(this.routeFlags);
-    stream.appendInt(this.routeCount);
+    stream.appendInt(this.routes.length);
     for (const route of this.routes) {
       route.serialize(stream);
     }
-    stream.appendInt(this.commandCount);
+    stream.appendInt(this.commands.length);
     for (const command of this.commands) {
       command.serialize(stream);
     }

@@ -1,37 +1,23 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { FileCoder } from './file-coder';
-import { ISerializable } from './interfaces';
-import { ensureDir } from '../util';
-import { BufferStream } from '../buffer-stream';
 
-export abstract class WolfArchive implements ISerializable {
-  protected file: FileCoder;
+export abstract class WolfArchive {
+  protected file_: FileCoder;
 
-  constructor(filename: string) {
-    this.file = new FileCoder(filename);
+  constructor(filename: string, seedIndices?: number[]) {
+    this.file_ = new FileCoder(filename, seedIndices);
   }
 
   get buffer() {
-    return this.file.buffer;
+    return this.file_.buffer;
   }
 
   get filename() {
-    return this.file.filename;
+    return this.file_.filename;
   }
 
   get isValid() {
-    return this.file.isValid;
+    return this.file_.isValid;
   }
-
-  abstract serialize(stream: BufferStream): void;
 
   abstract parse(): void;
-
-  write(filepath: string) {
-    const stream = new BufferStream();
-    this.serialize(stream);
-    ensureDir(path.dirname(filepath));
-    fs.writeFileSync(filepath, stream.buffer);
-  }
 }

@@ -5,13 +5,12 @@ import { ISerializable } from './interfaces';
 
 export class RouteCommand implements ISerializable {
   id: number;
-  argCount: number;
   args: number[];
   constructor(file: FileCoder) {
     this.id = file.readByte();
-    this.argCount = file.readByte();
+    const argCount = file.readByte();
     this.args = [];
-    for (let i = 0; i < this.argCount; i++) {
+    for (let i = 0; i < argCount; i++) {
       this.args.push(file.readUIntLE());
     }
     file.expect(WOLF_MAP.ROUTE_COMMAND_TERMINATOR);
@@ -19,7 +18,7 @@ export class RouteCommand implements ISerializable {
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.id);
-    stream.appendByte(this.argCount);
+    stream.appendByte(this.args.length);
     for (const arg of this.args) {
       stream.appendInt(arg);
     }

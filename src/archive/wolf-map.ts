@@ -1,6 +1,9 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
 import { WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
-import { bufferStartsWith } from '../util';
+import { bufferStartsWith, ensureDir } from '../util';
+import { ISerializable } from './interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfEvent } from './wolf-events';
 
@@ -10,13 +13,12 @@ export enum WolfArchiveType {
   En,
 }
 
-export class WolfMap extends WolfArchive {
+export class WolfMap extends WolfArchive implements ISerializable {
   protected mapType_ = WolfArchiveType.Invalid;
   protected tilesetId_ = -1;
   protected width_ = -1;
   protected height_ = -1;
   protected tiles_: Buffer;
-  protected eventCount_ = -1;
   protected events_: WolfEvent[];
 
   constructor(filename: string) {
@@ -24,9 +26,9 @@ export class WolfMap extends WolfArchive {
     if (!super.isValid) {
       return;
     }
-    if (bufferStartsWith(this.file.buffer, WOLF_JP_HEADER)) {
+    if (bufferStartsWith(this.file_.buffer, WOLF_JP_HEADER)) {
       this.mapType_ = WolfArchiveType.Jp;
-    } else if (bufferStartsWith(this.file.buffer, WOLF_EN_HEADER)) {
+    } else if (bufferStartsWith(this.file_.buffer, WOLF_EN_HEADER)) {
       this.mapType_ = WolfArchiveType.En;
     } else {
       this.mapType_ = WolfArchiveType.Invalid;
@@ -38,35 +40,35 @@ export class WolfMap extends WolfArchive {
   }
 
   override parse() {
-    this.file.assert(this.isValid, 'Invalid map file.');
+    this.file_.assert(this.isValid, 'Invalid map file.');
     if (this.mapType_ === WolfArchiveType.Jp) {
-      this.file.expect(WOLF_JP_HEADER);
+      this.file_.expect(WOLF_JP_HEADER);
     } else if (this.mapType_ === WolfArchiveType.En) {
-      this.file.expect(WOLF_EN_HEADER);
+      this.file_.expect(WOLF_EN_HEADER);
     }
-    this.tilesetId_ = this.file.readUIntLE();
-    this.width_ = this.file.readUIntLE();
-    this.height_ = this.file.readUIntLE();
-    this.eventCount_ = this.file.readUIntLE();
-    this.tiles_ = this.file.readBytes(this.width_ * this.height_ * 3 * 4);
+    this.tilesetId_ = this.file_.readUIntLE();
+    this.width_ = this.file_.readUIntLE();
+    this.height_ = this.file_.readUIntLE();
+    const eventCount = this.file_.readUIntLE();
+    this.tiles_ = this.file_.readBytes(this.width_ * this.height_ * 3 * 4);
     this.events_ = [];
     let indicator: number;
-    while ((indicator = this.file.readByte()) === WOLF_MAP.EVENT_INDICATOR) {
-      this.events_.push(new WolfEvent(this.file));
+    while ((indicator = this.file_.readByte()) === WOLF_MAP.EVENT_INDICATOR) {
+      this.events_.push(new WolfEvent(this.file_));
     }
-    this.file.assert(
+    this.file_.assert(
       indicator === WOLF_MAP.EVENT_FINISH_INDICATOR,
       `Unexpected event indicator ${indicator}`,
     );
-    this.file.assert(this.file.isEof, `File not fully parsed`);
-    this.file.assert(
-      this.events_.length === this.eventCount_,
-      `Expected ${this.eventCount_} events, got ${this.events_.length}`,
+    this.file_.assert(this.file_.isEof, `File not fully parsed`);
+    this.file_.assert(
+      this.events_.length === eventCount,
+      `Expected ${eventCount} events, got ${this.events_.length}`,
     );
   }
 
-  override serialize(stream: BufferStream) {
-    this.file.assert(this.isValid, 'Invalid map file.');
+  serialize(stream: BufferStream) {
+    this.file_.assert(this.isValid, 'Invalid map file.');
     if (this.mapType_ === WolfArchiveType.Jp) {
       stream.appendBuffer(WOLF_JP_HEADER);
     } else if (this.mapType_ === WolfArchiveType.En) {
@@ -75,12 +77,19 @@ export class WolfMap extends WolfArchive {
     stream.appendInt(this.tilesetId_);
     stream.appendInt(this.width_);
     stream.appendInt(this.height_);
-    stream.appendInt(this.eventCount_);
+    stream.appendInt(this.events_.length);
     stream.appendBuffer(this.tiles_);
     for (const event of this.events_) {
       stream.appendByte(WOLF_MAP.EVENT_INDICATOR);
       event.serialize(stream);
     }
     stream.appendByte(WOLF_MAP.EVENT_FINISH_INDICATOR);
+  }
+
+  write(filepath: string) {
+    const stream = new BufferStream();
+    this.serialize(stream);
+    ensureDir(path.dirname(filepath));
+    fs.writeFileSync(filepath, stream.buffer);
   }
 }

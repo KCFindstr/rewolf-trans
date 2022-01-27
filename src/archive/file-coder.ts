@@ -1,19 +1,32 @@
 import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
+import { Crypko } from './crypko';
 import { WolfContext } from './wolf-context';
 
 export class FileCoder {
   protected buffer_: Buffer;
   protected offset_: number;
   protected context_: string[];
+  protected crypko_: Crypko;
 
-  constructor(protected readonly filename_: string) {
-    this.buffer_ = fs.readFileSync(filename_);
+  constructor(protected readonly filename_: string, seedIndices_?: number[]) {
+    try {
+      const buffer = fs.readFileSync(filename_);
+      this.crypko_ = new Crypko(buffer, seedIndices_);
+      this.buffer_ = this.crypko_.decrypt();
+    } catch (e) {
+      console.log(`Failed to read ${filename_}: ${e.stack || e}`);
+      this.buffer_ = null;
+    }
     this.offset_ = 0;
   }
 
   get isValid() {
     return this.buffer_.length > 0;
+  }
+
+  get isEncrypted() {
+    return this.crypko_.isEncrypted;
   }
 
   get filename() {
@@ -34,6 +47,10 @@ export class FileCoder {
 
   get isEof() {
     return this.offset_ === this.buffer_.length;
+  }
+
+  get crypko() {
+    return this.crypko_;
   }
 
   enterContext(name: string) {
@@ -128,5 +145,10 @@ export class FileCoder {
     const ret = this.buffer_.readUInt32BE(this.offset_);
     this.offset_ += 4;
     return ret;
+  }
+
+  skip(count = 1) {
+    this.assertLength(count);
+    this.offset_ += count;
   }
 }

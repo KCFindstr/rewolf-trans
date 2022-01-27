@@ -183,7 +183,6 @@ export class WaitCommand extends WolfCommand {}
 export class MoveCommand extends WolfCommand {
   unknown: Buffer;
   flags: number;
-  routeCount: number;
   routes: RouteCommand[];
 
   constructor(
@@ -196,9 +195,9 @@ export class MoveCommand extends WolfCommand {
     super(cid, args, stringArgs, indent);
     this.unknown = file.readBytes(5);
     this.flags = file.readByte();
-    this.routeCount = file.readUIntLE();
+    const routeCount = file.readUIntLE();
     this.routes = [];
-    for (let i = 0; i < this.routeCount; i++) {
+    for (let i = 0; i < routeCount; i++) {
       this.routes.push(new RouteCommand(file));
     }
   }
@@ -207,7 +206,7 @@ export class MoveCommand extends WolfCommand {
     stream.appendByte(WOLF_MAP.MOVE_COMMAND_TERMINATOR);
     stream.appendBuffer(this.unknown);
     stream.appendByte(this.flags);
-    stream.appendInt(this.routeCount);
+    stream.appendInt(this.routes.length);
     for (const route of this.routes) {
       route.serialize(stream);
     }

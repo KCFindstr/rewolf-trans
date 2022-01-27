@@ -1,5 +1,5 @@
 import * as commandLineArgs from 'command-line-args';
-import { extract } from './src/extract/extract';
+import { extract } from './src/operation/extract';
 
 async function main() {
   const options = commandLineArgs([
