@@ -4,6 +4,7 @@ import { equalsIgnoreCase } from '../util';
 import { WolfArchive } from './wolf-archive';
 import { WolfMap } from './wolf-map';
 import { WolfDatabase } from './wolf-database';
+import { WolfCE } from './wolf-ce';
 
 export function loadArchive(filename: string): WolfArchive {
   const parentDir = path.basename(path.dirname(filename));
@@ -20,8 +21,7 @@ export function loadArchive(filename: string): WolfArchive {
         return new WolfDatabase(filename, mapFilename);
       }
     } else if (equalsIgnoreCase(basename, 'commonevent.dat')) {
-      // TODO: Implement
-      return null;
+      return new WolfCE(filename);
     }
   } else {
     return null;

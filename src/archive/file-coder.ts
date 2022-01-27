@@ -84,6 +84,10 @@ export class FileCoder {
     this.offset_ += expected.length;
   }
 
+  log(msg: string) {
+    console.log(`${this.posstr} > ${msg}`);
+  }
+
   assert(condition: boolean, msg = 'Assertion failed') {
     if (!condition) {
       throw new Error(`${this.posstr} > ${msg}`);

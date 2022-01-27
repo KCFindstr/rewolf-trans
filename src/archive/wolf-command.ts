@@ -355,8 +355,11 @@ export function createCommand(file: FileCoder): WolfCommand {
   if (terminator === WOLF_MAP.MOVE_COMMAND_TERMINATOR) {
     return new MoveCommand(cid, args, stringArgs, indent, file);
   } else if (terminator === WOLF_MAP.COMMAND_TERMINATOR) {
-    const commandClass = CID_TO_CLASS[cid];
-    file.assert(commandClass !== undefined, `Unknown command ${cid}`);
+    let commandClass = CID_TO_CLASS[cid];
+    if (!commandClass) {
+      file.log(`Unknown command: ${cid}`);
+      commandClass = WolfCommand;
+    }
     return new commandClass(cid, args, stringArgs, indent);
   }
 }

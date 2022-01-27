@@ -72,7 +72,7 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     );
     this.types_.forEach((type) => type.readData(this.file_));
     if (this.file_.readByte() !== WOLF_DAT.END) {
-      console.warn(`No ${WOLF_DAT.END} found at end of dat ${this.filename}`);
+      this.file_.log(`No ${WOLF_DAT.END} found at end of dat`);
     }
   }
 
