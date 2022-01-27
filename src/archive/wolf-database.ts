@@ -92,11 +92,7 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     fs.writeFileSync(dataPath, dataBuffer);
   }
 
-  override generatePatch(
-    _dataDir: string,
-    _patchDir: string,
-    _dict: TranslationDict,
-  ): void {
+  override generatePatch(_dict: TranslationDict): void {
     throw new Error('Method not implemented.');
   }
 }

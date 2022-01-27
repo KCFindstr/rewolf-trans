@@ -40,7 +40,7 @@ export class FileCoder {
     return this.buffer_;
   }
 
-  get posstr() {
+  get locstr() {
     return `${this.filename_}:${this.offset_.toString(16)}`;
   }
 
@@ -75,12 +75,12 @@ export class FileCoder {
   }
 
   log(msg: string) {
-    console.log(`${this.posstr} > ${msg}`);
+    console.log(`${this.locstr} > ${msg}`);
   }
 
   assert(condition: boolean, msg = 'Assertion failed') {
     if (!condition) {
-      throw new Error(`${this.posstr} > ${msg}`);
+      throw new Error(`${this.locstr} > ${msg}`);
     }
   }
 

@@ -21,9 +21,5 @@ export abstract class WolfArchive {
   }
 
   abstract parse(): void;
-  abstract generatePatch(
-    dataDir: string,
-    patchDir: string,
-    dict: TranslationDict,
-  ): void;
+  abstract generatePatch(dict: TranslationDict): void;
 }

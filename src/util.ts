@@ -55,6 +55,9 @@ export function versionStr2Arr(versionStr: string) {
   return versionStr.split('.').map((x) => parseInt(x, 10));
 }
 
+/**
+ * @returns 1 if lhs > rhs, -1 if lhs < rhs, 0 if lhs == rhs
+ */
 export function compareVersion(lhs: string | number[], rhs: string | number[]) {
   if (typeof lhs === 'string') {
     lhs = versionStr2Arr(lhs);

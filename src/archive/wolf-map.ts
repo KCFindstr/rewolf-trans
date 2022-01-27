@@ -94,11 +94,7 @@ export class WolfMap extends WolfArchive implements ISerializable {
     fs.writeFileSync(filepath, stream.buffer);
   }
 
-  override generatePatch(
-    _dataDir: string,
-    _patchDir: string,
-    _dict: TranslationDict,
-  ): void {
+  override generatePatch(_dict: TranslationDict): void {
     throw new Error('Method not implemented.');
   }
 }

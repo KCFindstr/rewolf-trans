@@ -29,11 +29,7 @@ export class WolfCE extends WolfArchive implements ISerializable {
     return this.events_;
   }
 
-  override generatePatch(
-    _dataDir: string,
-    _patchDir: string,
-    _dict: TranslationDict,
-  ): void {
+  override generatePatch(_dict: TranslationDict): void {
     throw new Error('Method not implemented.');
   }
 }
