@@ -14,58 +14,42 @@ export class WolfType implements IProjectData {
   constructor(file: FileCoder) {
     this.name = file.readString();
     // Field
-    const fieldCount = file.readUIntLE();
-    this.fields = [];
-    for (let i = 0; i < fieldCount; i++) {
-      this.fields.push(new WolfField(file));
-    }
+    this.fields = file.readArray((file) => new WolfField(file));
 
     // Data
-    const dataCount = file.readUIntLE();
-    this.data = [];
-    for (let i = 0; i < dataCount; i++) {
-      this.data.push(new WolfData(file));
-    }
+    this.data = file.readArray((file) => new WolfData(file));
     this.description = file.readString();
 
     // Field Type
-    this.fieldTypeCount = file.readUIntLE();
+    const fieldTypes = file.readByteArray();
+    this.fieldTypeCount = fieldTypes.length;
     for (let i = 0; i < this.fields.length; i++) {
-      this.fields[i].type = file.readByte();
+      this.fields[i].type = fieldTypes[i];
     }
-    file.skip(this.fieldTypeCount - this.fields.length);
 
     // Unknown
-    const unknown1Count = file.readUIntLE();
-    for (let i = 0; i < unknown1Count; i++) {
-      this.fields[i].unknown1 = file.readString();
-    }
+    file.readStringArray().map((val, index) => {
+      this.fields[index].unknown1 = val;
+    });
 
     // String args
-    const strArgsCount = file.readUIntLE();
-    for (let i = 0; i < strArgsCount; i++) {
-      this.fields[i].stringArgs = [];
-      const fieldStrArgsCount = file.readUIntLE();
-      for (let j = 0; j < fieldStrArgsCount; j++) {
-        this.fields[i].stringArgs.push(file.readString());
-      }
-    }
+    file
+      .readArray((file) => file.readStringArray())
+      .map((val, index) => {
+        this.fields[index].stringArgs = val;
+      });
 
     // Args
-    const argsCount = file.readUIntLE();
-    for (let i = 0; i < argsCount; i++) {
-      this.fields[i].args = [];
-      const fieldArgsCount = file.readUIntLE();
-      for (let j = 0; j < fieldArgsCount; j++) {
-        this.fields[i].args.push(file.readUIntLE());
-      }
-    }
+    file
+      .readArray((file) => file.readUIntArray())
+      .map((val, index) => {
+        this.fields[index].args = val;
+      });
 
     // Default value
-    const defaultValueCount = file.readUIntLE();
-    for (let i = 0; i < defaultValueCount; i++) {
-      this.fields[i].defaultValue = file.readUIntLE();
-    }
+    file.readUIntArray().map((val, index) => {
+      this.fields[index].defaultValue = val;
+    });
   }
 
   readData(file: FileCoder): void {
@@ -82,18 +66,22 @@ export class WolfType implements IProjectData {
   serializeData(stream: BufferStream): void {
     stream.appendBuffer(WOLF_DAT.TYPE_SEPARATOR);
     stream.appendInt(this.unknown1);
-    stream.appendInt(this.fields.length);
-    this.fields.forEach((field) => field.serializeData(stream));
-    stream.appendInt(this.data.length);
-    this.data.forEach((data) => data.serializeData(stream));
+    stream.appendCustomArray(this.fields, (stream, field) =>
+      field.serializeData(stream),
+    );
+    stream.appendCustomArray(this.data, (stream, data) =>
+      data.serializeData(stream),
+    );
   }
 
   serializeProject(stream: BufferStream): void {
     stream.appendString(this.name);
-    stream.appendInt(this.fields.length);
-    this.fields.forEach((field) => field.serializeProject(stream));
-    stream.appendInt(this.data.length);
-    this.data.forEach((data) => data.serializeProject(stream));
+    stream.appendCustomArray(this.fields, (stream, field) =>
+      field.serializeProject(stream),
+    );
+    stream.appendCustomArray(this.data, (stream, data) =>
+      data.serializeProject(stream),
+    );
     stream.appendString(this.description);
 
     // Misc field data
@@ -102,20 +90,17 @@ export class WolfType implements IProjectData {
     for (let i = this.fields.length; i < this.fieldTypeCount; i++) {
       stream.appendByte(0);
     }
-    stream.appendInt(this.fields.length);
-    this.fields.forEach((field) => stream.appendString(field.unknown1));
-    stream.appendInt(this.fields.length);
-    this.fields.forEach((field) => {
-      stream.appendInt(field.stringArgs.length);
-      field.stringArgs.forEach((str) => stream.appendString(str));
+    stream.appendStringArray(this.fields.map((field) => field.unknown1));
+
+    stream.appendCustomArray(this.fields, (stream, field) => {
+      stream.appendStringArray(field.stringArgs);
     });
-    stream.appendInt(this.fields.length);
-    this.fields.forEach((field) => {
-      stream.appendInt(field.args.length);
-      field.args.forEach((arg) => stream.appendInt(arg));
+
+    stream.appendCustomArray(this.fields, (stream, field) => {
+      stream.appendIntArray(field.args);
     });
-    stream.appendInt(this.fields.length);
-    this.fields.forEach((field) => stream.appendInt(field.defaultValue));
+
+    stream.appendIntArray(this.fields.map((field) => field.defaultValue));
   }
 }
 

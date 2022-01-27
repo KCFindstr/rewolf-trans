@@ -195,21 +195,14 @@ export class MoveCommand extends WolfCommand {
     super(cid, args, stringArgs, indent);
     this.unknown = file.readBytes(5);
     this.flags = file.readByte();
-    const routeCount = file.readUIntLE();
-    this.routes = [];
-    for (let i = 0; i < routeCount; i++) {
-      this.routes.push(new RouteCommand(file));
-    }
+    this.routes = file.readArray((file) => new RouteCommand(file));
   }
 
   override writeTeminator(stream: BufferStream): void {
     stream.appendByte(WOLF_MAP.MOVE_COMMAND_TERMINATOR);
     stream.appendBuffer(this.unknown);
     stream.appendByte(this.flags);
-    stream.appendInt(this.routes.length);
-    for (const route of this.routes) {
-      route.serialize(stream);
-    }
+    stream.appendSerializableArray(this.routes);
   }
 }
 
@@ -410,11 +403,7 @@ export function createCommand(file: FileCoder): WolfCommand {
     args.push(file.readUIntLE());
   }
   const indent = file.readByte();
-  const stringArgCount = file.readByte();
-  const stringArgs = [];
-  for (let i = 0; i < stringArgCount; i++) {
-    stringArgs.push(file.readString());
-  }
+  const stringArgs = file.readStringArray((file) => file.readByte());
   const terminator = file.readByte();
   if (terminator === WOLF_MAP.MOVE_COMMAND_TERMINATOR) {
     return new MoveCommand(cid, args, stringArgs, indent, file);

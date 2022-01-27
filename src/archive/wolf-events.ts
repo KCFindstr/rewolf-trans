@@ -121,14 +121,8 @@ export class WolfEventPage implements ISerializable {
     stream.appendBuffer(this.movement);
     stream.appendByte(this.flags);
     stream.appendByte(this.routeFlags);
-    stream.appendInt(this.routes.length);
-    for (const route of this.routes) {
-      route.serialize(stream);
-    }
-    stream.appendInt(this.commands.length);
-    for (const command of this.commands) {
-      command.serialize(stream);
-    }
+    stream.appendSerializableArray(this.routes);
+    stream.appendSerializableArray(this.commands);
     stream.appendBuffer(WOLF_MAP.COMMAND_END);
     stream.appendByte(this.shadowGraphicNum);
     stream.appendByte(this.collisionWidth);

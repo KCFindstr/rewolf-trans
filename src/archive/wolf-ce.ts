@@ -10,8 +10,7 @@ export class WolfCE extends WolfArchive implements ISerializable {
 
   serialize(stream: BufferStream): void {
     stream.appendBuffer(WOLF_CE.HEADER);
-    stream.appendInt(this.events_.length);
-    this.events_.forEach((event) => event.serialize(stream));
+    stream.appendSerializableArray(this.events_);
     stream.appendByte(WOLF_CE.INDICATOR2);
   }
 

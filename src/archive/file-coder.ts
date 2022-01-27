@@ -3,6 +3,10 @@ import * as iconv from 'iconv-lite';
 import { Crypko } from './crypko';
 import { WolfContext } from './wolf-context';
 
+export type ReadValueFn = (file: FileCoder) => number;
+
+const DefaultReadValueFn: ReadValueFn = (file) => file.readUIntLE();
+
 export class FileCoder {
   protected buffer_: Buffer;
   protected offset_: number;
@@ -135,6 +139,30 @@ export class FileCoder {
     const ret = this.buffer_.readUInt32BE(this.offset_);
     this.offset_ += 4;
     return ret;
+  }
+
+  readArray<T>(
+    readFn: (file: FileCoder, arrIndex: number) => T,
+    readCountFn = DefaultReadValueFn,
+  ): T[] {
+    const count = readCountFn(this);
+    const ret: T[] = [];
+    for (let i = 0; i < count; i++) {
+      ret.push(readFn(this, i));
+    }
+    return ret;
+  }
+
+  readUIntArray(readCountFn = DefaultReadValueFn): number[] {
+    return this.readArray((file) => file.readUIntLE(), readCountFn);
+  }
+
+  readByteArray(readCountFn = DefaultReadValueFn): number[] {
+    return this.readArray((file) => file.readByte(), readCountFn);
+  }
+
+  readStringArray(readCountFn = DefaultReadValueFn): string[] {
+    return this.readArray((file) => file.readString(), readCountFn);
   }
 
   skip(count = 1) {

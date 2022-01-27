@@ -42,14 +42,16 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     } else {
       stream.appendBuffer(WOLF_DAT.HEADER);
     }
-    stream.appendInt(this.types_.length);
-    this.types_.forEach((type) => type.serializeData(stream));
+    stream.appendCustomArray(this.types_, (stream, type) =>
+      type.serializeData(stream),
+    );
     stream.appendByte(WOLF_DAT.END);
   }
 
   serializeProject(stream: BufferStream): void {
-    stream.appendInt(this.types_.length);
-    this.types_.forEach((type) => type.serializeProject(stream));
+    stream.appendCustomArray(this.types_, (stream, type) => {
+      type.serializeProject(stream);
+    });
   }
 
   override parse(): void {

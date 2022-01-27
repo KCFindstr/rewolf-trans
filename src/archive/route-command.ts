@@ -8,20 +8,13 @@ export class RouteCommand implements ISerializable {
   args: number[];
   constructor(file: FileCoder) {
     this.id = file.readByte();
-    const argCount = file.readByte();
-    this.args = [];
-    for (let i = 0; i < argCount; i++) {
-      this.args.push(file.readUIntLE());
-    }
+    this.args = file.readUIntArray((file) => file.readByte());
     file.expect(WOLF_MAP.ROUTE_COMMAND_TERMINATOR);
   }
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.id);
-    stream.appendByte(this.args.length);
-    for (const arg of this.args) {
-      stream.appendInt(arg);
-    }
+    stream.appendIntArray(this.args, (stream, val) => stream.appendByte(val));
     stream.appendBuffer(WOLF_MAP.ROUTE_COMMAND_TERMINATOR);
   }
 }
