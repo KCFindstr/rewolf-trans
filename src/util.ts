@@ -50,3 +50,28 @@ export function bufferEndsWith(buffer: Buffer, end: Buffer) {
 export function equalsIgnoreCase(str1: string, str2: string) {
   return str1.toLowerCase() === str2.toLowerCase();
 }
+
+export function versionStr2Arr(versionStr: string) {
+  return versionStr.split('.').map((x) => parseInt(x, 10));
+}
+
+export function compareVersion(lhs: string | number[], rhs: string | number[]) {
+  if (typeof lhs === 'string') {
+    lhs = versionStr2Arr(lhs);
+  }
+  if (typeof rhs === 'string') {
+    rhs = versionStr2Arr(rhs);
+  }
+  const len = Math.min(lhs.length, rhs.length);
+  for (let i = 0; i < len; i++) {
+    if (lhs[i] > rhs[i]) {
+      return 1;
+    } else if (lhs[i] < rhs[i]) {
+      return -1;
+    }
+  }
+  if (lhs.length !== rhs.length) {
+    return lhs.length > rhs.length ? 1 : -1;
+  }
+  return 0;
+}

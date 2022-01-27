@@ -6,7 +6,6 @@ import { WolfContext } from './wolf-context';
 export class FileCoder {
   protected buffer_: Buffer;
   protected offset_: number;
-  protected context_: string[];
   protected crypko_: Crypko;
 
   constructor(protected readonly filename_: string, seedIndices_?: number[]) {
@@ -41,25 +40,12 @@ export class FileCoder {
     return `${this.filename_}:${this.offset_.toString(16)}`;
   }
 
-  get context() {
-    return this.context_;
-  }
-
   get isEof() {
     return this.offset_ === this.buffer_.length;
   }
 
   get crypko() {
     return this.crypko_;
-  }
-
-  enterContext(name: string) {
-    this.context_.push(name);
-  }
-
-  leaveContext() {
-    this.assert(this.context_.length > 0, 'Context stack is empty');
-    this.context_.pop();
   }
 
   expectByte(expected: number) {

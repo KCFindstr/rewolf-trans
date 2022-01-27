@@ -1,3 +1,5 @@
+export const REWOLFTRANS_VERSION = '0.1.0';
+
 export const PATCH_DIR_NAME = 'rewt-patch';
 export const OUTPUT_DIR_NAME = 'rewt-out';
 export const WOLF_JP_HEADER = Buffer.from([
