@@ -1,7 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_CE } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from './interfaces';
+import { ISerializable } from '../interfaces';
 import { createCommand, WolfCommand } from './wolf-command';
 
 export class WolfCommonEvent implements ISerializable {

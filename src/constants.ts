@@ -50,3 +50,18 @@ export const WOLF_CE = {
   INDICATOR3: 0x91,
   INDICATOR4: 0x92,
 };
+
+export const CTX = {
+  STR: {
+    MPS: 'MPS',
+    DB: 'DB',
+    CE: 'COMMONEVENT',
+    DAT: 'GAMEDAT',
+  },
+  NUM: {
+    MPS: 0,
+    DB: 1,
+    CE: 2,
+    DAT: 3,
+  },
+};

@@ -1,7 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from './interfaces';
+import { ISerializable } from '../interfaces';
 import { RouteCommand } from './route-command';
 import { createCommand, WolfCommand } from './wolf-command';
 

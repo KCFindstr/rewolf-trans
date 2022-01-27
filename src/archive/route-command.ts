@@ -1,7 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from './interfaces';
+import { ISerializable } from '../interfaces';
 
 export class RouteCommand implements ISerializable {
   id: number;

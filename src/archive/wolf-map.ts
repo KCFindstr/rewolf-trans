@@ -3,7 +3,7 @@ import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
 import { WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
 import { bufferStartsWith, ensureDir } from '../util';
-import { ISerializable } from './interfaces';
+import { ISerializable } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfEvent } from './wolf-events';
 

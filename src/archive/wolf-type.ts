@@ -1,7 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_DAT } from '../constants';
 import { FileCoder } from './file-coder';
-import { IProjectData } from './interfaces';
+import { IProjectData } from '../interfaces';
 
 export class WolfType implements IProjectData {
   name: string;

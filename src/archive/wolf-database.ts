@@ -4,7 +4,7 @@ import { BufferStream } from '../buffer-stream';
 import { WOLF_DAT } from '../constants';
 import { ensureDir } from '../util';
 import { FileCoder } from './file-coder';
-import { IProjectData } from './interfaces';
+import { IProjectData } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfType } from './wolf-type';
 

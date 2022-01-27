@@ -1,3 +1,5 @@
+import { IString } from '../interfaces';
+
 const SEPARATOR = '/';
 
 export function escapeMultiline(str: string) {
@@ -8,7 +10,10 @@ export function unescapeMultiline(str: string) {
   return str.replace(/\\r/g, '\r');
 }
 
-export function escapeString(str: string): string {
+export function escapeString(
+  str: string,
+  escapeChars: string = SEPARATOR,
+): string {
   const strArr = [];
   for (const char of str) {
     if (char === '\n') {
@@ -17,8 +22,8 @@ export function escapeString(str: string): string {
       strArr.push('\\r');
     } else if (char === '\t') {
       strArr.push('\\t');
-    } else if (char === SEPARATOR) {
-      strArr.push('\\' + SEPARATOR);
+    } else if (escapeChars.includes(char)) {
+      strArr.push('\\' + char);
     } else if (char === '\\') {
       strArr.push('\\\\');
     } else {
@@ -28,7 +33,10 @@ export function escapeString(str: string): string {
   return strArr.join('');
 }
 
-export function unescapeString(str: string): string {
+export function unescapeString(
+  str: string,
+  escapeChars: string = SEPARATOR,
+): string {
   const strArr = [];
   for (let i = 0; i < str.length; i++) {
     const char = str[i];
@@ -40,8 +48,8 @@ export function unescapeString(str: string): string {
         strArr.push('\r');
       } else if (nextChar === 't') {
         strArr.push('\t');
-      } else if (nextChar === SEPARATOR) {
-        strArr.push(SEPARATOR);
+      } else if (escapeChars.includes(nextChar)) {
+        strArr.push(nextChar);
       } else if (nextChar === '\\') {
         strArr.push('\\');
       } else {
@@ -54,11 +62,13 @@ export function unescapeString(str: string): string {
   return strArr.join('');
 }
 
-export function safeJoin(arr: string[]): string {
-  return arr.map(escapeString).join(SEPARATOR);
+export function safeJoin(arr: IString[], separator = SEPARATOR): string {
+  return arr
+    .map((item) => escapeString(item.toString(), separator))
+    .join(separator);
 }
 
-export function safeSplit(str: string): string[] {
+export function safeSplit(str: string, separators = SEPARATOR): string[] {
   const ret: string[] = [];
   let last = 0;
   for (let i = 0; i < str.length; i++) {
@@ -66,13 +76,13 @@ export function safeSplit(str: string): string[] {
       i++;
       continue;
     }
-    if (str[i] === SEPARATOR) {
+    if (separators.includes(str[i])) {
       ret.push(str.substring(last, i));
       last = i + 1;
     }
   }
   ret.push(str.substring(last));
-  return ret.map(unescapeString);
+  return ret.map((str) => unescapeString(str, separators));
 }
 
 export function escapePath(str: string) {

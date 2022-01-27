@@ -1,7 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from './interfaces';
+import { ISerializable } from '../interfaces';
 import { RouteCommand } from './route-command';
 
 export class WolfCommand implements ISerializable {
@@ -265,17 +265,80 @@ export class LoopEndCommand extends WolfCommand {}
 
 export class BranchEndCommand extends WolfCommand {}
 
-const CID_TO_CLASS: Record<
-  number,
-  {
-    new (
-      cid: number,
-      args: number[],
-      stringArgs: string[],
-      indent: number,
-    ): WolfCommand;
-  }
-> = {
+type WolfCommandType = {
+  new (
+    cid: number,
+    args: number[],
+    stringArgs: string[],
+    indent: number,
+  ): WolfCommand;
+};
+
+export const NAME_TO_CLASS: Record<string, WolfCommandType> = {
+  Blank: BlankCommand,
+  Checkpoint: CheckpointCommand,
+  Message: MessageCommand,
+  Choices: ChoicesCommand,
+  Comment: CommentCommand,
+  ForceStopMessage: ForceStopMessageCommand,
+  DebugMessage: DebugMessageCommand,
+  ClearDebugText: ClearDebugTextCommand,
+  VariableCondition: VariableConditionCommand,
+  StringCondition: StringConditionCommand,
+  SetVariable: SetVariableCommand,
+  SetString: SetStringCommand,
+  InputKey: InputKeyCommand,
+  SetVariableEx: SetVariableExCommand,
+  AutoInput: AutoInputCommand,
+  BanInput: BanInputCommand,
+  Teleport: TeleportCommand,
+  Sound: SoundCommand,
+  Picture: PictureCommand,
+  ChangeColor: ChangeColorCommand,
+  SetTransition: SetTransitionCommand,
+  PrepareTransition: PrepareTransitionCommand,
+  ExecuteTransition: ExecuteTransitionCommand,
+  StartLoop: StartLoopCommand,
+  BreakLoop: BreakLoopCommand,
+  BreakEvent: BreakEventCommand,
+  EraseEvent: EraseEventCommand,
+  ReturnToTitle: ReturnToTitleCommand,
+  EndGame: EndGameCommand,
+  LoopToStart: LoopToStartCommand,
+  StopNonPic: StopNonPicCommand,
+  ResumeNonPic: ResumeNonPicCommand,
+  LoopTimes: LoopTimesCommand,
+  Wait: WaitCommand,
+  Move: MoveCommand,
+  WaitForMove: WaitForMoveCommand,
+  CommonEvent: CommonEventCommand,
+  CommonEventReserve: CommonEventReserveCommand,
+  SetLabel: SetLabelCommand,
+  JumpLabel: JumpLabelCommand,
+  SaveLoad: SaveLoadCommand,
+  LoadGame: LoadGameCommand,
+  SaveGame: SaveGameCommand,
+  MoveDuringEventOn: MoveDuringEventOnCommand,
+  MoveDuringEventOff: MoveDuringEventOffCommand,
+  Chip: ChipCommand,
+  ChipSet: ChipSetCommand,
+  ChipOverwrite: ChipOverwriteCommand,
+  Database: DatabaseCommand,
+  ImportDatabase: ImportDatabaseCommand,
+  Party: PartyCommand,
+  MapEffect: MapEffectCommand,
+  ScrollScreen: ScrollScreenCommand,
+  Effect: EffectCommand,
+  CommonEventByName: CommonEventByNameCommand,
+  ChoiceCase: ChoiceCaseCommand,
+  SpecialChoiceCase: SpecialChoiceCaseCommand,
+  ElseCase: ElseCaseCommand,
+  CancelCase: CancelCaseCommand,
+  LoopEnd: LoopEndCommand,
+  BranchEnd: BranchEndCommand,
+};
+
+export const CID_TO_CLASS: Record<number, WolfCommandType> = {
   0: BlankCommand,
   99: CheckpointCommand,
   101: MessageCommand,
@@ -323,6 +386,7 @@ const CID_TO_CLASS: Record<
   231: MoveDuringEventOffCommand,
   240: ChipCommand,
   241: ChipSetCommand,
+  242: ChipOverwriteCommand,
   250: DatabaseCommand,
   251: ImportDatabaseCommand,
   270: PartyCommand,

@@ -1,6 +1,6 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_CE } from '../constants';
-import { ISerializable } from './interfaces';
+import { ISerializable } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfCommonEvent } from './wolf-common-event';
 
