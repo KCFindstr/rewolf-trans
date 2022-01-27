@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadArchive } from '../archive/auto-load';
+import { PathResolver } from '../archive/path-resolver';
 import { WolfArchive } from '../archive/wolf-archive';
 import { WolfContext } from '../archive/wolf-context';
 import { PATCH_DIR_NAME } from '../constants';
@@ -14,12 +15,13 @@ export async function extract(dir: string, encoding: string) {
   const patchDir = path.join(dir, PATCH_DIR_NAME);
   const dataDir = path.join(dir, 'Data');
   ensureDir(patchDir);
+  WolfContext.pathResolver = new PathResolver(dataDir, patchDir);
   const files = getFiles(dataDir, true);
   const archives: WolfArchive[] = [];
   for (const file of files) {
     const archive = loadArchive(file);
     if (archive?.isValid) {
-      console.log(archive.filename);
+      console.log(`Valid archive: ${archive.filename}`);
       archives.push(archive);
     }
   }
