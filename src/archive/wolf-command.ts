@@ -9,26 +9,31 @@ import {
 import { RouteCommand } from './route-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
+import { noop } from '../util';
 
 export class WolfCommand
   implements ISerializable, ITranslationText, IContextSupplier
 {
-  needtrans = false;
+  protected strArgsTranslated_: boolean[];
 
   constructor(
     public cid: number,
     public args: number[],
     public stringArgs: string[],
     public indent: number,
-  ) {}
+  ) {
+    this.strArgsTranslated_ = new Array(stringArgs.length).fill(false);
+  }
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.args.length + 1);
     stream.appendInt(this.cid);
-    stream.appendIntArray(this.args, () => undefined);
+    stream.appendIntArray(this.args, noop);
     stream.appendByte(this.indent);
-    stream.appendStringArray(this.stringArgs, (stream, value) =>
-      stream.appendByte(value),
+    stream.appendStringArray(
+      this.stringArgs,
+      this.strArgsTranslated_,
+      (stream, value) => stream.appendByte(value),
     );
     this.writeTeminator(stream);
   }
@@ -40,6 +45,7 @@ export class WolfCommand
   getTexts(): string[] {
     return [];
   }
+
   patchText(_index: number, _value: string) {
     // Do nothing
   }
@@ -63,6 +69,10 @@ export class StringArgsCommand extends WolfCommand {
     return this.stringArgs;
   }
   override patchText(index: number, value: string): void {
+    if (value.trim().length === 0) {
+      return;
+    }
+    this.strArgsTranslated_[index] = true;
     this.stringArgs[index] = value;
   }
 }
@@ -111,7 +121,7 @@ export enum PictureCommandType {
   WindowFile = 3,
   WindowString = 4,
 }
-export class PictureCommand extends WolfCommand {
+export class PictureCommand extends StringArgsCommand {
   get type(): PictureCommandType {
     const typ = (this.args[0] >> 4) & 0x07;
     if (typ <= PictureCommandType.WindowString) {
@@ -132,14 +142,14 @@ export class PictureCommand extends WolfCommand {
     if (this.type !== PictureCommandType.Text) {
       return [];
     }
-    return this.stringArgs;
+    return super.getTexts();
   }
 
   override patchText(index: number, value: string): void {
     if (this.type !== PictureCommandType.Text) {
       throw new Error(`Picture type ${this.type} does not have text`);
     }
-    this.stringArgs[index] = value;
+    super.patchText(index, value);
   }
 
   get filename() {

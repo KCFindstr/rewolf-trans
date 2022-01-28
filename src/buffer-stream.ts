@@ -37,24 +37,28 @@ export class BufferStream {
     }
   }
 
-  appendString(str: string) {
-    const buffer = iconv.encode(str, 'Shift_JIS');
+  appendString(str: string, translated = false) {
+    const buffer = iconv.encode(
+      str,
+      translated ? WolfContext.writeEncoding : 'Shift_JIS',
+    );
     this.appendInt(buffer.length + 1);
     this.appendBuffer(buffer);
     this.appendByte(0);
   }
 
-  appendLocaleString(str: string) {
-    const buffer = iconv.encode(str, WolfContext.writeEncoding);
-    this.appendInt(buffer.length + 1);
-    this.appendBuffer(buffer);
-    this.appendByte(0);
-  }
-
-  appendStringArray(strs: string[], appendCountFn = DefaultAppendValueFn) {
+  appendStringArray(
+    strs: string[],
+    translated: boolean | boolean[] = false,
+    appendCountFn = DefaultAppendValueFn,
+  ) {
     this.appendCustomArray(
       strs,
-      (stream, str) => stream.appendString(str),
+      (stream, str, index) =>
+        stream.appendString(
+          str,
+          typeof translated === 'boolean' ? translated : translated[index],
+        ),
       appendCountFn,
     );
   }
@@ -88,12 +92,12 @@ export class BufferStream {
 
   appendCustomArray<T>(
     arr: T[],
-    itemOp: (stream: BufferStream, item: T) => void,
+    itemOp: (stream: BufferStream, item: T, index: number) => void,
     appendCountFn = DefaultAppendValueFn,
   ) {
     appendCountFn(this, arr.length);
-    for (const item of arr) {
-      itemOp(this, item);
+    for (let i = 0; i < arr.length; i++) {
+      itemOp(this, arr[i], i);
     }
   }
 }
