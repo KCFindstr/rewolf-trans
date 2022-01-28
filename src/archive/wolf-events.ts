@@ -42,9 +42,9 @@ export class WolfEvent implements ISerializable, IAppendContext {
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     for (const page of this.pages) {
-      ctxBuilder.enter(page.id + 1);
+      ctxBuilder.enter(page.id);
       page.appendContext(ctxBuilder, dict);
-      ctxBuilder.leave(page.id + 1);
+      ctxBuilder.leave(page.id);
     }
   }
 
@@ -122,9 +122,9 @@ export class WolfEventPage implements ISerializable, IAppendContext {
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     for (let i = 0; i < this.commands.length; i++) {
-      ctxBuilder.enter(i + 1);
+      ctxBuilder.enter(i);
       this.commands[i].appendContext(ctxBuilder, dict);
-      ctxBuilder.leave(i + 1);
+      ctxBuilder.leave(i);
     }
   }
 

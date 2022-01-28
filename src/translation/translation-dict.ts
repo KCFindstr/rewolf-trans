@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { WolfContext } from '../archive/wolf-context';
 import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
-import { ICustomKey, IString, ITranslationText } from '../interfaces';
+import { ICustomKey, IString } from '../interfaces';
 import { compareVersion, forceWriteFile, groupBy } from '../util';
 import { ContextBuilder } from './context-builder';
 import {
@@ -144,16 +144,13 @@ export class TranslationDict {
     entry.addCtx(context);
   }
 
-  public addSupplier(
-    ctxBuilder: ContextBuilder,
-    supplier: ITranslationText,
-    patchFile: string,
-  ) {
-    supplier
-      .getTexts()
-      .forEach((text) =>
-        this.add(text.text, patchFile, ctxBuilder.build(text)),
-      );
+  public addTexts(ctxBuilder: ContextBuilder, texts: TranslationString[]) {
+    for (let i = 0; i < texts.length; i++) {
+      const text = texts[i];
+      ctxBuilder.enter(i);
+      this.add(text.text, ctxBuilder.patchFile, ctxBuilder.build(text));
+      ctxBuilder.leave(i);
+    }
   }
 
   public addEntry(entry: TranslationEntry) {

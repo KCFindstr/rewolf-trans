@@ -2,7 +2,6 @@ import { BufferStream } from './buffer-stream';
 import { FileCoder } from './archive/file-coder';
 import { TranslationDict } from './translation/translation-dict';
 import { ContextBuilder } from './translation/context-builder';
-import { TranslationString } from './translation/translation-string';
 
 export interface ISerializable {
   serialize(stream: BufferStream): void;
@@ -28,8 +27,4 @@ export interface ICustomKey {
 
 export interface IString {
   toString(): string;
-}
-
-export interface ITranslationText {
-  getTexts(): TranslationString[];
 }

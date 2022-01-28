@@ -5,6 +5,8 @@ import { IAppendContext, ISerializable } from '../interfaces';
 import { createCommand, WolfCommand } from './wolf-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
+import { TranslationString } from '../translation/translation-string';
+import { noop } from '../util';
 
 export class WolfCommonEvent implements ISerializable, IAppendContext {
   id: number;
@@ -13,13 +15,13 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
   description: string;
   unknown1: number;
   unknown2: Buffer;
-  strArgs: string[];
+  strArgs: TranslationString[];
   byteArgs: number[];
-  spOptionArgs: string[][];
+  spOptionArgs: TranslationString[][];
   spOptionValArgs: number[][];
   intArgs: number[];
   unknown3: Buffer;
-  cSelf: string[];
+  cSelf: TranslationString[];
   unknown4: string;
   unknown5: string;
   unknown6: string;
@@ -35,16 +37,13 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
     this.unknown6 = file.readString();
     this.description = file.readString();
     file.expectByte(WOLF_CE.INDICATOR2);
-    this.strArgs = file.readStringArray();
+    this.strArgs = file.readTStringArray();
     this.byteArgs = file.readByteArray();
-    this.spOptionArgs = file.readArray((file) => file.readStringArray());
+    this.spOptionArgs = file.readArray((file) => file.readTStringArray());
     this.spOptionValArgs = file.readArray((file) => file.readUIntArray());
     this.intArgs = file.readUIntArray();
     this.unknown3 = file.readBytes(5);
-    this.cSelf = [];
-    for (let i = 0; i < 100; i++) {
-      this.cSelf.push(file.readString());
-    }
+    this.cSelf = file.readTStringArray(() => 100);
     file.expectByte(WOLF_CE.INDICATOR3);
     this.unknown4 = file.readString();
     const indicator = file.readByte();
@@ -70,17 +69,17 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
     stream.appendString(this.unknown6);
     stream.appendString(this.description);
     stream.appendByte(WOLF_CE.INDICATOR2);
-    stream.appendStringArray(this.strArgs);
+    stream.appendTStringArray(this.strArgs);
     stream.appendByteArray(this.byteArgs);
     stream.appendCustomArray(this.spOptionArgs, (stream, arr) => {
-      stream.appendStringArray(arr);
+      stream.appendTStringArray(arr);
     });
     stream.appendCustomArray(this.spOptionValArgs, (stream, arr) => {
       stream.appendIntArray(arr);
     });
     stream.appendIntArray(this.intArgs);
     stream.appendBuffer(this.unknown3);
-    this.cSelf.forEach((str) => stream.appendString(str));
+    stream.appendTStringArray(this.cSelf, noop);
     stream.appendByte(WOLF_CE.INDICATOR3);
     stream.appendString(this.unknown4);
     if (this.unknown5) {
@@ -94,10 +93,28 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter('cmd');
     for (let i = 0; i < this.commands.length; i++) {
-      ctxBuilder.enter(i + 1);
+      ctxBuilder.enter(i);
       this.commands[i].appendContext(ctxBuilder, dict);
-      ctxBuilder.leave(i + 1);
+      ctxBuilder.leave(i);
     }
+    ctxBuilder.leave('cmd');
+
+    ctxBuilder.enter('strarg');
+    dict.addTexts(ctxBuilder, this.strArgs);
+    ctxBuilder.leave('strarg');
+
+    ctxBuilder.enter('optarg');
+    for (let i = 0; i < this.spOptionArgs.length; i++) {
+      ctxBuilder.enter(i);
+      dict.addTexts(ctxBuilder, this.spOptionArgs[i]);
+      ctxBuilder.leave(i);
+    }
+    ctxBuilder.leave('optarg');
+
+    ctxBuilder.enter('cself');
+    dict.addTexts;
+    ctxBuilder.leave('cself');
   }
 }

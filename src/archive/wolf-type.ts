@@ -38,7 +38,7 @@ export class WolfType implements IProjectData, IAppendContext {
 
     // String args
     file
-      .readArray((file) => file.readStringArray())
+      .readArray((file) => file.readTStringArray())
       .map((val, index) => {
         this.fields[index].stringArgs = val;
       });
@@ -105,7 +105,7 @@ export class WolfType implements IProjectData, IAppendContext {
     stream.appendStringArray(this.fields.map((field) => field.unknown1));
 
     stream.appendCustomArray(this.fields, (stream, field) => {
-      stream.appendStringArray(field.stringArgs);
+      stream.appendTStringArray(field.stringArgs);
     });
 
     stream.appendCustomArray(this.fields, (stream, field) => {
@@ -116,11 +116,11 @@ export class WolfType implements IProjectData, IAppendContext {
   }
 }
 
-export class WolfField implements IProjectData {
+export class WolfField implements IProjectData, IAppendContext {
   name: string;
   type: number;
   unknown1: string;
-  stringArgs: string[];
+  stringArgs: TranslationString[];
   args: number[];
   defaultValue: number;
   indexInfo: number;
@@ -159,6 +159,10 @@ export class WolfField implements IProjectData {
 
   serializeProject(stream: BufferStream): void {
     stream.appendString(this.name);
+  }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    dict.addTexts(ctxBuilder, this.stringArgs);
   }
 }
 
@@ -235,6 +239,7 @@ export class WolfData implements IProjectData, IAppendContext {
         ctxBuilder.enter(field.index, field.name);
         const ctx = ctxBuilder.build(value);
         dict.add(value.text, ctxBuilder.patchFile, ctx);
+        field.appendContext(ctxBuilder, dict);
         ctxBuilder.leave(field.index);
       });
   }

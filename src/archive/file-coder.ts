@@ -97,7 +97,8 @@ export class FileCoder {
     this.assert(len > 0, `Unexpected string length ${len}`);
     const bytes = this.readBytes(len - 1);
     this.expectByte(0);
-    return iconv.decode(bytes, WolfContext.readEncoding);
+    const str = iconv.decode(bytes, WolfContext.readEncoding);
+    return str;
   }
 
   readTString(): TranslationString {

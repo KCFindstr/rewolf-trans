@@ -1,16 +1,14 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { IAppendContext, ISerializable, ITranslationText } from '../interfaces';
+import { IAppendContext, ISerializable } from '../interfaces';
 import { RouteCommand } from './route-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
 
-export class WolfCommand
-  implements ISerializable, ITranslationText, IAppendContext
-{
+export class WolfCommand implements ISerializable, IAppendContext {
   constructor(
     public cid: number,
     public args: number[],
@@ -37,10 +35,6 @@ export class WolfCommand
     return [];
   }
 
-  patchText(_index: number, _value: string) {
-    // Do nothing
-  }
-
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     let name = this.constructor.name;
@@ -49,7 +43,7 @@ export class WolfCommand
     }
     name = name.substring(0, name.length - 7);
     ctxBuilder.enter(name);
-    dict.addSupplier(ctxBuilder, this, ctxBuilder.patchFile);
+    dict.addTexts(ctxBuilder, this.getTexts());
     ctxBuilder.leave(name);
   }
 }
@@ -57,12 +51,6 @@ export class WolfCommand
 export class StringArgsCommand extends WolfCommand {
   override getTexts() {
     return this.stringArgs;
-  }
-  override patchText(index: number, value: string): void {
-    if (value.trim().length === 0) {
-      return;
-    }
-    this.stringArgs[index].patch(value);
   }
 }
 
@@ -132,13 +120,6 @@ export class PictureCommand extends StringArgsCommand {
       return [];
     }
     return super.getTexts();
-  }
-
-  override patchText(index: number, value: string): void {
-    if (this.type !== PictureCommandType.Text) {
-      throw new Error(`Picture type ${this.type} does not have text`);
-    }
-    super.patchText(index, value);
   }
 
   get filename() {
@@ -244,7 +225,7 @@ export class ChipSetCommand extends WolfCommand {}
 
 export class ChipOverwriteCommand extends WolfCommand {}
 
-export class DatabaseCommand extends WolfCommand {}
+export class DatabaseCommand extends StringArgsCommand {}
 
 export class ImportDatabaseCommand extends WolfCommand {}
 
