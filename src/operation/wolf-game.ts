@@ -56,6 +56,7 @@ export class WolfGame {
     for (const archive of this.archives_) {
       archive.generatePatch(this.dict_);
     }
+    this.dict_.refreshContexts();
   }
 
   public loadPatch(patchDir: string) {

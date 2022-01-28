@@ -3,13 +3,24 @@ import { TranslationContext } from './translation-context';
 import { TranslationString } from './translation-string';
 
 export class ContextPathPart implements IString {
-  constructor(public index: string, public name?: string) {}
+  public index: string;
+  constructor(index: IString, public name?: string) {
+    this.index = index.toString();
+  }
 
   toString(): string {
     if (this.name !== undefined) {
       return `[${this.index}]${this.name}`;
     }
     return this.index;
+  }
+
+  get numIndex(): number {
+    return parseInt(this.index, 10);
+  }
+
+  set numIndex(value: number) {
+    this.index = value.toString();
   }
 
   static FromString(str: string): ContextPathPart {

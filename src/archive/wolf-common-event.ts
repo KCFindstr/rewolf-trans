@@ -95,7 +95,8 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     ctxBuilder.enter('cmd');
     for (let i = 0; i < this.commands.length; i++) {
-      ctxBuilder.enter(i);
+      const cmd = this.commands[i];
+      ctxBuilder.enter(i, cmd.name);
       this.commands[i].appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
     }
@@ -114,7 +115,7 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
     ctxBuilder.leave('optarg');
 
     ctxBuilder.enter('cself');
-    dict.addTexts;
+    dict.addTexts(ctxBuilder, this.cSelf);
     ctxBuilder.leave('cself');
   }
 }

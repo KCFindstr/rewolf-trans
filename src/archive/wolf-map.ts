@@ -98,13 +98,13 @@ export class WolfMap extends WolfArchive implements ISerializable {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, `${pathInfo.name}.txt`);
     const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
-    const ctx = new ContextBuilder(relativeFile, CTX.STR.MPS);
-    ctx.enter(pathInfo.name);
+    const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.MPS);
+    ctxBuilder.enter(pathInfo.name);
     for (const event of this.events_) {
-      ctx.enter(event.id);
-      event.appendContext(ctx, dict);
-      ctx.leave(event.id);
+      ctxBuilder.enter(event.id);
+      event.appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(event.id);
     }
-    ctx.leave(pathInfo.name);
+    ctxBuilder.leave(pathInfo.name);
   }
 }

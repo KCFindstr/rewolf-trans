@@ -237,8 +237,7 @@ export class WolfData implements IProjectData, IAppendContext {
           throw new Error(`WolfType: Invalid value to translate: ${value}`);
         }
         ctxBuilder.enter(field.index, field.name);
-        const ctx = ctxBuilder.build(value);
-        dict.add(value.text, ctxBuilder.patchFile, ctx);
+        dict.add(value.text, ctxBuilder.patchFile, ctxBuilder.build(value));
         field.appendContext(ctxBuilder, dict);
         ctxBuilder.leave(field.index);
       });

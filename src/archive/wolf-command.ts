@@ -9,12 +9,20 @@ import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
 
 export class WolfCommand implements ISerializable, IAppendContext {
+  public readonly name: string;
+
   constructor(
     public cid: number,
     public args: number[],
     public stringArgs: TranslationString[],
     public indent: number,
-  ) {}
+  ) {
+    const name = this.constructor.name;
+    if (!name.endsWith('Command')) {
+      throw new Error(`Unknown command type: ${name}`);
+    }
+    this.name = name.substring(0, name.length - 7);
+  }
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.args.length + 1);
@@ -37,14 +45,7 @@ export class WolfCommand implements ISerializable, IAppendContext {
 
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    let name = this.constructor.name;
-    if (!name.endsWith('Command')) {
-      throw new Error(`Unknown command type: ${name}`);
-    }
-    name = name.substring(0, name.length - 7);
-    ctxBuilder.enter(name);
     dict.addTexts(ctxBuilder, this.getTexts());
-    ctxBuilder.leave(name);
   }
 }
 

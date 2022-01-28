@@ -20,11 +20,13 @@
   "dependencies": {
     "@types/node": "^17.0.12",
     "command-line-args": "^5.2.0",
-    "iconv-lite": "^0.6.3"
+    "iconv-lite": "^0.6.3",
+    "string-similarity": "^4.0.4"
   },
   "devDependencies": {
     "@types/command-line-args": "^5.2.0",
     "@types/inquirer": "^7.3.3",
+    "@types/string-similarity": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "eslint": "^8.7.0",
