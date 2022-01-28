@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
+import { TranslationString } from '../translation/translation-string';
 import { Crypko } from './crypko';
 import { WolfContext } from './wolf-context';
 
@@ -99,6 +100,10 @@ export class FileCoder {
     return iconv.decode(bytes, WolfContext.readEncoding);
   }
 
+  readTString(): TranslationString {
+    return TranslationString.FromRawStr(this.readString());
+  }
+
   readBytes(count = 1): Buffer {
     this.assertLength(count);
     const result = this.buffer_.slice(this.offset_, this.offset_ + count);
@@ -163,6 +168,10 @@ export class FileCoder {
 
   readStringArray(readCountFn = DefaultReadValueFn): string[] {
     return this.readArray((file) => file.readString(), readCountFn);
+  }
+
+  readTStringArray(readCountFn = DefaultReadValueFn): TranslationString[] {
+    return this.readArray((file) => file.readTString(), readCountFn);
   }
 
   skip(count = 1) {

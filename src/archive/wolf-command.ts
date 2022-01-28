@@ -10,30 +10,25 @@ import { RouteCommand } from './route-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { noop } from '../util';
+import { TranslationString } from '../translation/translation-string';
 
 export class WolfCommand
   implements ISerializable, ITranslationText, IContextSupplier
 {
-  protected strArgsTranslated_: boolean[];
-
   constructor(
     public cid: number,
     public args: number[],
-    public stringArgs: string[],
+    public stringArgs: TranslationString[],
     public indent: number,
-  ) {
-    this.strArgsTranslated_ = new Array(stringArgs.length).fill(false);
-  }
+  ) {}
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.args.length + 1);
     stream.appendInt(this.cid);
     stream.appendIntArray(this.args, noop);
     stream.appendByte(this.indent);
-    stream.appendStringArray(
-      this.stringArgs,
-      this.strArgsTranslated_,
-      (stream, value) => stream.appendByte(value),
+    stream.appendTStringArray(this.stringArgs, (stream, value) =>
+      stream.appendByte(value),
     );
     this.writeTeminator(stream);
   }
@@ -66,14 +61,13 @@ export class WolfCommand
 
 export class StringArgsCommand extends WolfCommand {
   override getTexts() {
-    return this.stringArgs;
+    return this.stringArgs.map((str) => str.text);
   }
   override patchText(index: number, value: string): void {
     if (value.trim().length === 0) {
       return;
     }
-    this.strArgsTranslated_[index] = true;
-    this.stringArgs[index] = value;
+    this.stringArgs[index].patch(value);
   }
 }
 
@@ -159,7 +153,7 @@ export class PictureCommand extends StringArgsCommand {
     ) {
       throw new Error(`Picture type ${this.type} does not have filename`);
     }
-    return this.stringArgs[0];
+    return this.stringArgs[0].text;
   }
 
   set filename(value: string) {
@@ -169,7 +163,7 @@ export class PictureCommand extends StringArgsCommand {
     ) {
       throw new Error(`Picture type ${this.type} does not have filename`);
     }
-    this.stringArgs[0] = value;
+    this.stringArgs[0].text = value;
   }
 }
 
@@ -211,7 +205,7 @@ export class MoveCommand extends WolfCommand {
   constructor(
     cid: number,
     args: number[],
-    stringArgs: string[],
+    stringArgs: TranslationString[],
     indent: number,
     file?: FileCoder,
   ) {
@@ -285,7 +279,7 @@ type WolfCommandType = {
   new (
     cid: number,
     args: number[],
-    stringArgs: string[],
+    stringArgs: TranslationString[],
     indent: number,
   ): WolfCommand;
 };
@@ -423,7 +417,7 @@ export function createCommand(file: FileCoder): WolfCommand {
   const cid = file.readUIntLE();
   const args = file.readUIntArray(() => argCount - 1);
   const indent = file.readByte();
-  const stringArgs = file.readStringArray((file) => file.readByte());
+  const stringArgs = file.readTStringArray((file) => file.readByte());
   const terminator = file.readByte();
   if (terminator === WOLF_MAP.MOVE_COMMAND_TERMINATOR) {
     return new MoveCommand(cid, args, stringArgs, indent, file);

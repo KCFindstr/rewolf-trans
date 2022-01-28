@@ -6,6 +6,7 @@ import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { isTranslatable } from '../translation/string-utils';
 import { noop } from '../util';
+import { TranslationString } from '../translation/translation-string';
 
 export class WolfType implements IProjectData, IContextSupplier {
   name: string;
@@ -168,8 +169,7 @@ export type WolfDataValue = string | number;
 export class WolfData implements IProjectData, IContextSupplier {
   name: string;
   intValues: number[];
-  stringValues: string[];
-  stringValuesTranslated: boolean[];
+  stringValues: TranslationString[];
   fields: WolfField[];
 
   constructor(file: FileCoder) {
@@ -181,17 +181,12 @@ export class WolfData implements IProjectData, IContextSupplier {
     const intValueSize = fields.filter((field) => field.isInt).length;
     const strValueSize = fields.filter((field) => field.isString).length;
     this.intValues = file.readUIntArray(() => intValueSize);
-    this.stringValues = file.readStringArray(() => strValueSize);
-    this.stringValuesTranslated = new Array(strValueSize).fill(false);
+    this.stringValues = file.readTStringArray(() => strValueSize);
   }
 
   serializeData(stream: BufferStream): void {
     stream.appendIntArray(this.intValues, noop);
-    stream.appendStringArray(
-      this.stringValues,
-      this.stringValuesTranslated,
-      noop,
-    );
+    stream.appendTStringArray(this.stringValues, noop);
   }
 
   serializeProject(stream: BufferStream): void {
@@ -201,7 +196,7 @@ export class WolfData implements IProjectData, IContextSupplier {
   getV(key: WolfDataKey): WolfDataValue {
     if (key instanceof WolfField) {
       if (key.isString) {
-        return this.stringValues[key.index];
+        return this.stringValues[key.index].text;
       } else {
         return this.intValues[key.index];
       }
@@ -212,10 +207,14 @@ export class WolfData implements IProjectData, IContextSupplier {
     }
   }
 
-  setV(key: WolfDataKey, value: WolfDataValue): void {
+  setV(key: WolfDataKey, value: WolfDataValue, translate = false): void {
     if (key instanceof WolfField) {
       if (key.isString) {
-        this.stringValues[key.index] = value as string;
+        if (translate) {
+          this.stringValues[key.index].patch(value as string);
+        } else {
+          this.stringValues[key.index].text = value as string;
+        }
       } else {
         this.intValues[key.index] = value as number;
       }
@@ -243,8 +242,7 @@ export class WolfData implements IProjectData, IContextSupplier {
           if (translated.trim().length === 0) {
             return;
           }
-          this.stringValuesTranslated[field.index] = true;
-          this.setV(field, translated);
+          this.setV(field, translated, true);
         });
         dict.add(value, ctxBuilder.patchFile, ctx);
         ctxBuilder.leave(field.index);

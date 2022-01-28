@@ -1,6 +1,7 @@
 import * as iconv from 'iconv-lite';
 import { WolfContext } from './archive/wolf-context';
 import { ISerializable } from './interfaces';
+import { TranslationString } from './translation/translation-string';
 
 export type AppendValueFn = (stream: BufferStream, value: number) => void;
 const DefaultAppendValueFn = (stream: BufferStream, value: number) =>
@@ -47,18 +48,25 @@ export class BufferStream {
     this.appendByte(0);
   }
 
-  appendStringArray(
-    strs: string[],
-    translated: boolean | boolean[] = false,
+  appendTString(str: TranslationString) {
+    this.appendString(str.text, str.isTranslated);
+  }
+
+  appendStringArray(strs: string[], appendCountFn = DefaultAppendValueFn) {
+    this.appendCustomArray(
+      strs,
+      (stream, str) => stream.appendString(str),
+      appendCountFn,
+    );
+  }
+
+  appendTStringArray(
+    strs: TranslationString[],
     appendCountFn = DefaultAppendValueFn,
   ) {
     this.appendCustomArray(
       strs,
-      (stream, str, index) =>
-        stream.appendString(
-          str,
-          typeof translated === 'boolean' ? translated : translated[index],
-        ),
+      (stream, str) => stream.appendTString(str),
       appendCountFn,
     );
   }
