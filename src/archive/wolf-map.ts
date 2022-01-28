@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
-import { WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
+import { CTX, WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
 import { bufferStartsWith, forceWriteFile } from '../util';
 import { ISerializable } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
@@ -98,9 +98,13 @@ export class WolfMap extends WolfArchive implements ISerializable {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, `${pathInfo.name}.txt`);
     const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
-    const ctx = new ContextBuilder(relativeFile);
+    const ctx = new ContextBuilder(relativeFile, CTX.STR.MPS);
     ctx.enter(pathInfo.name);
-    this.events_.forEach((event) => event.appendContext(ctx, dict));
+    for (const event of this.events_) {
+      ctx.enter(event.id);
+      event.appendContext(ctx, dict);
+      ctx.leave(event.id);
+    }
     ctx.leave(pathInfo.name);
   }
 }

@@ -9,8 +9,6 @@ import {
 import { RouteCommand } from './route-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
-import { MapEventContext } from '../translation/map-event-context';
-import { CommonEventContext } from '../translation/common-event-context';
 
 export class WolfCommand
   implements ISerializable, ITranslationText, IContextSupplier
@@ -48,24 +46,15 @@ export class WolfCommand
 
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
-    const ctx: MapEventContext = MapEventContext.FromData.apply(
-      undefined,
-      ctxBuilder.ctxArr,
-    );
+    let name = this.constructor.name;
+    if (!name.endsWith('Command')) {
+      throw new Error(`Unknown command type: ${name}`);
+    }
+    name = name.substring(0, name.length - 7);
+    ctxBuilder.enter(name);
+    const ctx = ctxBuilder.build();
     dict.addSupplier(this, ctxBuilder.patchFile, ctx);
-    ctxBuilder.leave(this);
-  }
-
-  // For common events
-  appendContextCE(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
-    const ctx: CommonEventContext = CommonEventContext.FromData.apply(
-      undefined,
-      ctxBuilder.ctxArr,
-    );
-    dict.addSupplier(this, ctxBuilder.patchFile, ctx);
-    ctxBuilder.leave(this);
+    ctxBuilder.leave(name);
   }
 }
 

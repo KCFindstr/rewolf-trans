@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
-import { WOLF_DAT } from '../constants';
+import { CTX, WOLF_DAT } from '../constants';
 import { forceWriteFile } from '../util';
 import { FileCoder } from './file-coder';
 import { IProjectData } from '../interfaces';
@@ -96,15 +96,16 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
     const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
-    const ctxBuilder = new ContextBuilder(relativeFile);
+    const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.DB);
     ctxBuilder.enter(pathInfo.name);
     for (let i = 0; i < this.types_.length; i++) {
-      ctxBuilder.enter(i);
+      const type = this.types_[i];
+      ctxBuilder.enter(i, type.name);
       ctxBuilder.patchFile = path.join(
         relativeFile,
-        escapePath(this.types_[i].name) + '.txt',
+        escapePath(type.name) + '.txt',
       );
-      this.types_[i].appendContext(ctxBuilder, dict);
+      type.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
     }
     ctxBuilder.leave(pathInfo.name);

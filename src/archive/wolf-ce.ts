@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
-import { WOLF_CE } from '../constants';
+import { CTX, WOLF_CE } from '../constants';
 import { ISerializable } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
@@ -38,13 +38,15 @@ export class WolfCE extends WolfArchive implements ISerializable {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
     const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
-    const ctxBuilder = new ContextBuilder(relativeFile);
+    const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.CE);
     for (const event of this.events_) {
       ctxBuilder.patchFile = path.join(
         relativeFile,
         `${addLeadingChar(event.id, 3, '0')}_${escapePath(event.name)}.txt`,
       );
+      ctxBuilder.enter(event.id);
       event.appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(event.id);
     }
   }
 }

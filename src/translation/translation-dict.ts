@@ -3,7 +3,6 @@ import { WolfContext } from '../archive/wolf-context';
 import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
 import { ICustomKey, IString, ITranslationText } from '../interfaces';
 import { compareVersion, forceWriteFile, groupBy } from '../util';
-import { ctxFromStr } from './create-translation-context';
 import {
   escapeMultiline,
   isTranslatable,
@@ -243,7 +242,7 @@ export class TranslationDict {
             if (str.endsWith(' < UNTRANSLATED')) {
               str = str.substring(0, str.length - 15);
             }
-            entry.addCtx(ctxFromStr(str));
+            entry.addCtx(TranslationContext.FromStr(str));
             if (
               state !== LoadPatchFileState.Oringal &&
               state !== LoadPatchFileState.Context

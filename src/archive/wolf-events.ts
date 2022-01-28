@@ -41,11 +41,11 @@ export class WolfEvent implements ISerializable, IContextSupplier {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
     for (const page of this.pages) {
+      ctxBuilder.enter(page.id + 1);
       page.appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(page.id + 1);
     }
-    ctxBuilder.leave(this);
   }
 
   serialize(stream: BufferStream) {
@@ -121,13 +121,11 @@ export class WolfEventPage implements ISerializable, IContextSupplier {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
     for (let i = 0; i < this.commands.length; i++) {
-      ctxBuilder.enter(i);
+      ctxBuilder.enter(i + 1);
       this.commands[i].appendContext(ctxBuilder, dict);
-      ctxBuilder.leave();
+      ctxBuilder.leave(i + 1);
     }
-    ctxBuilder.leave(this);
   }
 
   serialize(stream: BufferStream) {

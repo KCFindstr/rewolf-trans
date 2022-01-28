@@ -94,12 +94,10 @@ export class WolfCommonEvent implements ISerializable, IContextSupplier {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
     for (let i = 0; i < this.commands.length; i++) {
-      ctxBuilder.enter(i);
-      this.commands[i].appendContextCE(ctxBuilder, dict);
-      ctxBuilder.leave(i);
+      ctxBuilder.enter(i + 1);
+      this.commands[i].appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(i + 1);
     }
-    ctxBuilder.leave(this);
   }
 }

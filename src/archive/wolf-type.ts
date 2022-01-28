@@ -4,7 +4,6 @@ import { FileCoder } from './file-coder';
 import { IContextSupplier, IProjectData } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
-import { DatabaseContext } from '../translation/database-context';
 import { isTranslatable } from '../translation/string-utils';
 
 export class WolfType implements IProjectData, IContextSupplier {
@@ -56,13 +55,12 @@ export class WolfType implements IProjectData, IContextSupplier {
     });
   }
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
     for (let i = 0; i < this.data.length; i++) {
-      ctxBuilder.enter(i);
-      this.data[i].appendContext(ctxBuilder, dict);
+      const datum = this.data[i];
+      ctxBuilder.enter(i, datum.name);
+      datum.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
     }
-    ctxBuilder.leave(this);
   }
 
   readData(file: FileCoder): void {
@@ -240,7 +238,6 @@ export class WolfData implements IProjectData, IContextSupplier {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this);
     this.fields
       .filter((field) => field.isTranslatable)
       .forEach((field) => {
@@ -251,17 +248,13 @@ export class WolfData implements IProjectData, IContextSupplier {
         if (!isTranslatable(value)) {
           return;
         }
-        ctxBuilder.enter(field);
-        const ctx: DatabaseContext = DatabaseContext.FromData.apply(
-          undefined,
-          ctxBuilder.ctxArr,
-        );
+        ctxBuilder.enter(field.index, field.name);
+        const ctx = ctxBuilder.build();
         ctx.withPatchCallback((_, translated) => {
           this.setV(field, translated);
         });
         dict.add(value, ctxBuilder.patchFile, ctx);
-        ctxBuilder.leave(field);
+        ctxBuilder.leave(field.index);
       });
-    ctxBuilder.leave(this);
   }
 }
