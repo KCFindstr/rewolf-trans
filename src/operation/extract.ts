@@ -1,37 +1,13 @@
-import * as fs from 'fs';
 import * as path from 'path';
-import { loadArchive } from '../archive/auto-load';
-import { PathResolver } from '../archive/path-resolver';
-import { WolfArchive } from '../archive/wolf-archive';
 import { WolfContext } from '../archive/wolf-context';
 import { PATCH_DIR_NAME } from '../constants';
-import { TranslationDict } from '../translation/translation-dict';
-import { ensureDir, getFiles } from '../util';
+import { WolfGame } from './wolf-game';
 
-export async function extract(dir: string, encoding: string) {
-  if (!fs.existsSync(dir)) {
-    throw new Error(`Directory ${dir} does not exist.`);
-  }
+export function extract(dir: string, encoding: string) {
   WolfContext.readEncoding = encoding;
   const patchDir = path.join(dir, PATCH_DIR_NAME);
-  const dataDir = path.join(dir, 'Data');
-  ensureDir(patchDir);
-  WolfContext.pathResolver = new PathResolver(dataDir, patchDir);
-  const files = getFiles(dataDir, true);
-  const archives: WolfArchive[] = [];
-  for (const file of files) {
-    const archive = loadArchive(file);
-    if (archive?.isValid) {
-      console.log(`Valid archive: ${archive.filename}`);
-      archives.push(archive);
-    }
-  }
-  for (const archive of archives) {
-    archive.parse();
-  }
-  const dict = new TranslationDict();
-  for (const archive of archives) {
-    archive.generatePatch(dict);
-  }
-  dict.write();
+  const game = new WolfGame(dir);
+  game.parse();
+  game.generatePatch();
+  game.writePatch(patchDir);
 }

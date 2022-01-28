@@ -9,7 +9,7 @@ export function ensureDir(dir: string) {
 
 export function getFiles(dir: string, recursive = false) {
   const files = fs.readdirSync(dir);
-  const result = [];
+  const result: string[] = [];
   for (const file of files) {
     const filePath = path.join(dir, file);
     if (fs.statSync(filePath).isDirectory()) {
@@ -97,3 +97,17 @@ export function forceWriteFile(
   ensureDir(dir);
   fs.writeFileSync(file, data, options);
 }
+
+export function groupBy<T>(arr: T[], key: (item: T) => string) {
+  const ret: Record<string, T[]> = {};
+  for (const item of arr) {
+    const keyStr = key(item);
+    if (!ret[keyStr]) {
+      ret[keyStr] = [];
+    }
+    ret[keyStr].push(item);
+  }
+  return ret;
+}
+
+export type Constructor<T> = new (...args: any[]) => T;

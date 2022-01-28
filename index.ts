@@ -14,7 +14,7 @@ async function main() {
   const encoding = options.encoding || 'SHIFT_JIS';
   try {
     if (options.extract) {
-      await extract(options.extract, encoding);
+      extract(options.extract, encoding);
     } else if (options.patch) {
     } else {
       console.error('Must specify either --extract or --patch.');

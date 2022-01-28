@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 export class PathResolver {
-  constructor(public readonly fromDir: string, public readonly toDir: string) {}
+  constructor(public fromDir: string, public toDir?: string) {}
 
   relativeFrom(absolutePath: string) {
     return path.relative(this.fromDir, absolutePath);

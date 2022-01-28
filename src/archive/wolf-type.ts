@@ -259,7 +259,7 @@ export class WolfData implements IProjectData, IContextSupplier {
         ctx.withPatchCallback((_, translated) => {
           this.setV(field, translated);
         });
-        dict.add(value, undefined, ctxBuilder.patchFile, ctx);
+        dict.add(value, ctxBuilder.patchFile, ctx);
         ctxBuilder.leave(field);
       });
     ctxBuilder.leave(this);
