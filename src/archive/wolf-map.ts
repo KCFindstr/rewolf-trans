@@ -1,12 +1,13 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
 import { WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
-import { bufferStartsWith, ensureDir } from '../util';
+import { bufferStartsWith, forceWriteFile } from '../util';
 import { ISerializable } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfEvent } from './wolf-events';
 import { TranslationDict } from '../translation/translation-dict';
+import { WolfContext } from './wolf-context';
+import { ContextBuilder } from '../translation/context-builder';
 
 export enum WolfArchiveType {
   Invalid,
@@ -90,11 +91,16 @@ export class WolfMap extends WolfArchive implements ISerializable {
   write(filepath: string) {
     const stream = new BufferStream();
     this.serialize(stream);
-    ensureDir(path.dirname(filepath));
-    fs.writeFileSync(filepath, stream.buffer);
+    forceWriteFile(filepath, stream.buffer);
   }
 
-  override generatePatch(_dict: TranslationDict): void {
-    throw new Error('Method not implemented.');
+  override generatePatch(dict: TranslationDict): void {
+    const pathInfo = path.parse(this.file_.filename);
+    const patchPath = path.join(pathInfo.dir, `${pathInfo.name}.txt`);
+    const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
+    const ctx = new ContextBuilder(relativeFile);
+    ctx.enter(pathInfo.name);
+    this.events_.forEach((event) => event.appendContext(ctx, dict));
+    ctx.leave(pathInfo.name);
   }
 }

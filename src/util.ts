@@ -3,7 +3,7 @@ import * as path from 'path';
 
 export function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+    fs.mkdirSync(dir, { recursive: true });
   }
 }
 
@@ -77,4 +77,23 @@ export function compareVersion(lhs: string | number[], rhs: string | number[]) {
     return lhs.length > rhs.length ? 1 : -1;
   }
   return 0;
+}
+
+export function addLeadingChar(
+  num: number,
+  length: number,
+  leadingChar: string,
+) {
+  const str = leadingChar.repeat(length) + num.toString();
+  return str.substring(str.length - length);
+}
+
+export function forceWriteFile(
+  file: string,
+  data: string | NodeJS.ArrayBufferView,
+  options?: fs.WriteFileOptions,
+) {
+  const dir = path.dirname(file);
+  ensureDir(dir);
+  fs.writeFileSync(file, data, options);
 }

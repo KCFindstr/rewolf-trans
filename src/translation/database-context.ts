@@ -56,16 +56,16 @@ export class DatabaseContext extends TranslationContext {
 
   static FromPath(path: string[]): DatabaseContext {
     if (path.length !== 4) {
-      throw new Error(`Invalid Database path: ${safeJoin(path)}`);
+      throw new Error(`Invalid Database path: ${path}`);
     }
     const dbName = path[0];
     const indices: number[] = [];
     const names: string[] = [];
     for (let i = 1; i < path.length; i++) {
       const part = path[i];
-      const match = part.match(/^\[(\d+)\](.*)$/);
+      const match = part.match(/^\[(\d+)\](.*)$/s);
       if (!match) {
-        throw new Error(`Invalid Database path: ${safeJoin(path)}`);
+        throw new Error(`Invalid Database path: ${path}`);
       }
       indices.push(parseInt(match[1], 10));
       names.push(match[2]);

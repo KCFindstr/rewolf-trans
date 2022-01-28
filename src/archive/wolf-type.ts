@@ -1,9 +1,13 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_DAT } from '../constants';
 import { FileCoder } from './file-coder';
-import { IProjectData } from '../interfaces';
+import { IContextSupplier, IProjectData } from '../interfaces';
+import { ContextBuilder } from '../translation/context-builder';
+import { TranslationDict } from '../translation/translation-dict';
+import { DatabaseContext } from '../translation/database-context';
+import { isTranslatable } from '../translation/string-utils';
 
-export class WolfType implements IProjectData {
+export class WolfType implements IProjectData, IContextSupplier {
   name: string;
   fields: WolfField[];
   fieldTypeCount: number;
@@ -50,6 +54,15 @@ export class WolfType implements IProjectData {
     file.readUIntArray().map((val, index) => {
       this.fields[index].defaultValue = val;
     });
+  }
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    for (let i = 0; i < this.data.length; i++) {
+      ctxBuilder.enter(i);
+      this.data[i].appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(i);
+    }
+    ctxBuilder.leave(this);
   }
 
   readData(file: FileCoder): void {
@@ -133,6 +146,10 @@ export class WolfField implements IProjectData {
     }
   }
 
+  get isTranslatable(): boolean {
+    return this.isString && this.type === 0;
+  }
+
   readData(file: FileCoder): void {
     this.indexInfo = file.readUIntLE();
   }
@@ -154,7 +171,7 @@ export interface WolfDataStringValue {
 export type WolfDataKey = WolfField | number;
 export type WolfDataValue = string | number;
 
-export class WolfData implements IProjectData {
+export class WolfData implements IProjectData, IContextSupplier {
   name: string;
   intValues: number[];
   stringValues: WolfDataStringValue[];
@@ -220,5 +237,31 @@ export class WolfData implements IProjectData {
     } else {
       throw new Error(`WolfType: Invalid key: ${key}`);
     }
+  }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    this.fields
+      .filter((field) => field.isTranslatable)
+      .forEach((field) => {
+        const value = this.getV(field);
+        if (typeof value !== 'string') {
+          throw new Error(`WolfType: Invalid value to translate: ${value}`);
+        }
+        if (!isTranslatable(value)) {
+          return;
+        }
+        ctxBuilder.enter(field);
+        const ctx: DatabaseContext = DatabaseContext.FromData.apply(
+          undefined,
+          ctxBuilder.ctxArr,
+        );
+        ctx.withPatchCallback((_, translated) => {
+          this.setV(field, translated);
+        });
+        dict.add(value, undefined, ctxBuilder.patchFile, ctx);
+        ctxBuilder.leave(field);
+      });
+    ctxBuilder.leave(this);
   }
 }

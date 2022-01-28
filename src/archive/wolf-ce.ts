@@ -1,9 +1,14 @@
+import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
 import { WOLF_CE } from '../constants';
 import { ISerializable } from '../interfaces';
+import { ContextBuilder } from '../translation/context-builder';
+import { escapePath } from '../translation/string-utils';
 import { TranslationDict } from '../translation/translation-dict';
+import { addLeadingChar } from '../util';
 import { WolfArchive } from './wolf-archive';
 import { WolfCommonEvent } from './wolf-common-event';
+import { WolfContext } from './wolf-context';
 
 export class WolfCE extends WolfArchive implements ISerializable {
   events_: WolfCommonEvent[];
@@ -29,7 +34,17 @@ export class WolfCE extends WolfArchive implements ISerializable {
     return this.events_;
   }
 
-  override generatePatch(_dict: TranslationDict): void {
-    throw new Error('Method not implemented.');
+  override generatePatch(dict: TranslationDict): void {
+    const pathInfo = path.parse(this.file_.filename);
+    const patchPath = path.join(pathInfo.dir, pathInfo.name);
+    const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
+    const ctxBuilder = new ContextBuilder(relativeFile);
+    for (const event of this.events_) {
+      ctxBuilder.patchFile = path.join(
+        relativeFile,
+        `${addLeadingChar(event.id, 3, '0')}_${escapePath(event.name)}.txt`,
+      );
+      event.appendContext(ctxBuilder, dict);
+    }
   }
 }

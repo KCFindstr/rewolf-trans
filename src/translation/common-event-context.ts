@@ -32,14 +32,14 @@ export class CommonEventContext extends TranslationContext {
     }
     return new CommonEventContext(
       event.id,
-      cmdIndex,
+      cmdIndex + 1,
       name.substring(0, name.length - 7),
     );
   }
 
   static FromPath(path: string[]): CommonEventContext {
     if (path.length !== 3) {
-      throw new Error(`Invalid CommonEvent path: ${safeJoin(path)}`);
+      throw new Error(`Invalid CommonEvent path: ${path}`);
     }
     const [eventNum, lineNum, commandName] = path;
     return new CommonEventContext(

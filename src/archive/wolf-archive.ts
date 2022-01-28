@@ -1,7 +1,8 @@
+import { IGeneratePatch } from '../interfaces';
 import { TranslationDict } from '../translation/translation-dict';
 import { FileCoder } from './file-coder';
 
-export abstract class WolfArchive {
+export abstract class WolfArchive implements IGeneratePatch {
   protected file_: FileCoder;
 
   constructor(filename: string, seedIndices?: number[]) {

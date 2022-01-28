@@ -1,10 +1,12 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_CE } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from '../interfaces';
+import { IContextSupplier, ISerializable } from '../interfaces';
 import { createCommand, WolfCommand } from './wolf-command';
+import { ContextBuilder } from '../translation/context-builder';
+import { TranslationDict } from '../translation/translation-dict';
 
-export class WolfCommonEvent implements ISerializable {
+export class WolfCommonEvent implements ISerializable, IContextSupplier {
   id: number;
   name: string;
   commands: WolfCommand[];
@@ -57,6 +59,7 @@ export class WolfCommonEvent implements ISerializable {
     this.unknown7 = file.readUIntLE();
     file.expectByte(WOLF_CE.INDICATOR4);
   }
+
   serialize(stream: BufferStream): void {
     stream.appendByte(WOLF_CE.INDICATOR1);
     stream.appendInt(this.id);
@@ -88,5 +91,15 @@ export class WolfCommonEvent implements ISerializable {
     } else {
       stream.appendByte(WOLF_CE.INDICATOR3);
     }
+  }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    for (let i = 0; i < this.commands.length; i++) {
+      ctxBuilder.enter(i);
+      this.commands[i].appendContextCE(ctxBuilder, dict);
+      ctxBuilder.leave(i);
+    }
+    ctxBuilder.leave(this);
   }
 }

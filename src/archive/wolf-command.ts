@@ -1,10 +1,20 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from '../interfaces';
+import {
+  IContextSupplier,
+  ISerializable,
+  ITranslationText,
+} from '../interfaces';
 import { RouteCommand } from './route-command';
+import { ContextBuilder } from '../translation/context-builder';
+import { TranslationDict } from '../translation/translation-dict';
+import { MapEventContext } from '../translation/map-event-context';
+import { CommonEventContext } from '../translation/common-event-context';
 
-export class WolfCommand implements ISerializable {
+export class WolfCommand
+  implements ISerializable, ITranslationText, IContextSupplier
+{
   needtrans = false;
 
   constructor(
@@ -17,32 +27,54 @@ export class WolfCommand implements ISerializable {
   serialize(stream: BufferStream): void {
     stream.appendByte(this.args.length + 1);
     stream.appendInt(this.cid);
-    for (const arg of this.args) {
-      stream.appendInt(arg);
-    }
+    stream.appendIntArray(this.args, () => undefined);
     stream.appendByte(this.indent);
-    stream.appendByte(this.stringArgs.length);
-    for (const arg of this.stringArgs) {
-      stream.appendString(arg);
-    }
+    stream.appendStringArray(this.stringArgs, (stream, value) =>
+      stream.appendByte(value),
+    );
     this.writeTeminator(stream);
   }
 
   writeTeminator(stream: BufferStream) {
     stream.appendByte(0);
   }
+
+  getTexts(): string[] {
+    return [];
+  }
+  patchText(_index: number, _value: string) {
+    // Do nothing
+  }
+
+  // For map events
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    const ctx: MapEventContext = MapEventContext.FromData.apply(
+      undefined,
+      ctxBuilder.ctxArr,
+    );
+    dict.addSupplier(this, ctxBuilder.patchFile, ctx);
+    ctxBuilder.leave(this);
+  }
+
+  // For common events
+  appendContextCE(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    const ctx: CommonEventContext = CommonEventContext.FromData.apply(
+      undefined,
+      ctxBuilder.ctxArr,
+    );
+    dict.addSupplier(this, ctxBuilder.patchFile, ctx);
+    ctxBuilder.leave(this);
+  }
 }
 
-export class SingleStringArgCommand extends WolfCommand {
-  get text() {
-    return this.stringArgs.length > 0 ? this.stringArgs[0] : '';
+export class StringArgsCommand extends WolfCommand {
+  override getTexts() {
+    return this.stringArgs;
   }
-  set text(value: string) {
-    if (this.stringArgs.length > 0) {
-      this.stringArgs[0] = value;
-    } else {
-      this.stringArgs.push(value);
-    }
+  override patchText(index: number, value: string): void {
+    this.stringArgs[index] = value;
   }
 }
 
@@ -50,29 +82,25 @@ export class BlankCommand extends WolfCommand {}
 
 export class CheckpointCommand extends WolfCommand {}
 
-export class MessageCommand extends SingleStringArgCommand {}
+export class MessageCommand extends StringArgsCommand {}
 
-export class ChoicesCommand extends WolfCommand {
-  get choices() {
-    return this.stringArgs;
-  }
-}
+export class ChoicesCommand extends StringArgsCommand {}
 
-export class CommentCommand extends SingleStringArgCommand {}
+export class CommentCommand extends StringArgsCommand {}
 
 export class ForceStopMessageCommand extends WolfCommand {}
 
-export class DebugMessageCommand extends SingleStringArgCommand {}
+export class DebugMessageCommand extends StringArgsCommand {}
 
 export class ClearDebugTextCommand extends WolfCommand {}
 
 export class VariableConditionCommand extends WolfCommand {}
 
-export class StringConditionCommand extends WolfCommand {}
+export class StringConditionCommand extends StringArgsCommand {}
 
 export class SetVariableCommand extends WolfCommand {}
 
-export class SetStringCommand extends SingleStringArgCommand {}
+export class SetStringCommand extends StringArgsCommand {}
 
 export class InputKeyCommand extends WolfCommand {}
 
@@ -111,22 +139,18 @@ export class PictureCommand extends WolfCommand {
     this.args[1] = value;
   }
 
-  get text() {
+  override getTexts() {
     if (this.type !== PictureCommandType.Text) {
-      throw new Error(`Picture type ${this.type} does not have text`);
+      return [];
     }
-    return this.stringArgs.length > 0 ? this.stringArgs[0] : '';
+    return this.stringArgs;
   }
 
-  set text(value: string) {
+  override patchText(index: number, value: string): void {
     if (this.type !== PictureCommandType.Text) {
       throw new Error(`Picture type ${this.type} does not have text`);
     }
-    if (this.stringArgs.length > 0) {
-      this.stringArgs[0] = value;
-    } else {
-      this.stringArgs.push(value);
-    }
+    this.stringArgs[index] = value;
   }
 
   get filename() {
@@ -398,10 +422,7 @@ export const CID_TO_CLASS: Record<number, WolfCommandType> = {
 export function createCommand(file: FileCoder): WolfCommand {
   const argCount = file.readByte();
   const cid = file.readUIntLE();
-  const args = [];
-  for (let i = 0; i < argCount - 1; i++) {
-    args.push(file.readUIntLE());
-  }
+  const args = file.readUIntArray(() => argCount - 1);
   const indent = file.readByte();
   const stringArgs = file.readStringArray((file) => file.readByte());
   const terminator = file.readByte();

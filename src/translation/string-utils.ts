@@ -88,11 +88,11 @@ export function escapePath(str: string) {
 }
 export function escapeMultiline(str: string) {
   str = escapeString(str, MULTILINE_ESCAPE, false);
-  const trailingNewLineNum = str.match(/\n*$/)[0].length;
+  const trailingNewLineNum = str.match(/\n*$/s)[0].length;
   str =
     str.substring(0, str.length - trailingNewLineNum) +
     '\\n'.repeat(trailingNewLineNum);
-  const trailingSpaceNum = str.match(/\s*$/)[0].length;
+  const trailingSpaceNum = str.match(/ *$/s)[0].length;
   str =
     str.substring(0, str.length - trailingSpaceNum) +
     '\\s'.repeat(trailingSpaceNum);
@@ -100,7 +100,7 @@ export function escapeMultiline(str: string) {
 }
 
 export function unescapeMultiline(str: string) {
-  const trailingSpaceNum = str.match(/(\\s)*$/)[0].length;
+  const trailingSpaceNum = str.match(/(\\s)*$/s)[0].length;
   str =
     str.substring(0, str.length - trailingSpaceNum) +
     ' '.repeat(trailingSpaceNum / 2);

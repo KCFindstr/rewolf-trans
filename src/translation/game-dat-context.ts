@@ -21,7 +21,7 @@ export class GameDatContext extends TranslationContext {
 
   static FromPath(path: string[]): GameDatContext {
     if (path.length !== 1) {
-      throw new Error(`Invalid GameDat path: ${safeJoin(path)}`);
+      throw new Error(`Invalid GameDat path: ${path}`);
     }
     return new GameDatContext(path[0]);
   }

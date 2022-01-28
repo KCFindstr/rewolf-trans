@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import { WolfContext } from '../archive/wolf-context';
-import { REWOLFTRANS_VERSION } from '../constants';
-import { ICustomKey, IString } from '../interfaces';
-import { compareVersion } from '../util';
+import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
+import { ICustomKey, IString, ITranslationText } from '../interfaces';
+import { compareVersion, forceWriteFile } from '../util';
+import { ctxFromStr } from './create-translation-context';
 import {
   escapeMultiline,
   isTranslatable,
@@ -25,7 +26,7 @@ export class TranslationEntry implements ICustomKey, IString {
   }
 
   get isTranslated(): boolean {
-    return this.translated.trim().length > 0;
+    return this.translated && this.translated.trim().length > 0;
   }
 
   addCtx(...ctxs: TranslationContext[]) {
@@ -46,13 +47,13 @@ export class TranslationEntry implements ICustomKey, IString {
   }
 
   setTranslationIfEmpty(translation: string) {
-    if (!this.isTranslated) {
+    if (!this.isTranslated && translation) {
       this.translated = translation;
     }
   }
 
   setPatchFileIfEmpty(patchFile: string) {
-    if (!this.patchFile) {
+    if (!this.patchFile && patchFile) {
       this.patchFile = patchFile;
     }
   }
@@ -65,7 +66,7 @@ export class TranslationEntry implements ICustomKey, IString {
       '> BEGIN STRING',
       escapeMultiline(this.original),
       ...ctx.map((ctx) => `> CONTEXT [NEW] ${ctx.toString()}`),
-      escapeMultiline(this.translated),
+      escapeMultiline(this.translated ?? ''),
       '> END STRING',
     ];
     return lines.join('\n');
@@ -84,14 +85,14 @@ export class TranslationDict {
 
   private writePatch(patchPath: string, entries: TranslationEntry[]) {
     const patchLines = [
-      `> REWOLF TRANS PATCH FILE VERSION ${REWOLFTRANS_VERSION}`,
+      `> REWOLF TRANS PATCH FILE VERSION ${REWOLFTRANS_PATCH_VERSION}`,
       '',
     ];
     for (const entry of entries) {
       patchLines.push(entry.toString());
       patchLines.push('');
     }
-    fs.writeFileSync(patchPath, patchLines.join('\n'), 'utf8');
+    forceWriteFile(patchPath, patchLines.join('\n'), 'utf8');
   }
 
   private updatePatch(patchPath: string, entries: TranslationEntry[]) {
@@ -127,7 +128,12 @@ export class TranslationDict {
     console.log(this.locstr(file, line, msg));
   }
 
-  public add(original: string, translated: string, patchFile: string) {
+  public add(
+    original: string,
+    translated: string,
+    patchFile: string,
+    context: TranslationContext,
+  ) {
     let entry = this.entries[original];
     if (!entry) {
       entry = new TranslationEntry();
@@ -136,7 +142,27 @@ export class TranslationDict {
     entry.original = original;
     entry.setTranslationIfEmpty(translated);
     entry.setPatchFileIfEmpty(patchFile);
+    entry.addCtx(context);
     this.entries[original] = entry;
+  }
+
+  public addSupplier(
+    supplier: ITranslationText,
+    patchFile: string,
+    ctx: TranslationContext,
+  ) {
+    const texts = supplier.getTexts();
+    texts
+      .filter((text) => isTranslatable(text))
+      .forEach((text) => this.add(text, undefined, patchFile, ctx));
+    ctx.withPatchCallback((original, translated) => {
+      for (let i = 0; i < texts.length; i++) {
+        const text = texts[i];
+        if (text === original) {
+          supplier.patchText(i, translated);
+        }
+      }
+    });
   }
 
   public addEntry(entry: TranslationEntry) {
@@ -185,7 +211,7 @@ export class TranslationDict {
             original.splice(0);
             translated.splice(0);
             entry = new TranslationEntry();
-            if (state !== LoadPatchFileState.Oringal) {
+            if (state !== LoadPatchFileState.None) {
               throw new Error(`Unexpected BEGIN STRING in state ${state}`);
             }
             state = LoadPatchFileState.Oringal;
@@ -199,8 +225,9 @@ export class TranslationDict {
             state = LoadPatchFileState.None;
           } else if (([, str] = this.parseInstruction(line, 'CONTEXT'))) {
             str = str.trimStart();
-            if (str.startsWith('[NEW]')) {
-              str = str.substring(5).trimStart();
+            const match = str.match(/^\[[^\]]*\] (.*)$/s);
+            if (match) {
+              str = match[1];
             }
             if (str.endsWith(' < UNUSED')) {
               str = str.substring(0, str.length - 9);
@@ -208,8 +235,11 @@ export class TranslationDict {
             if (str.endsWith(' < UNTRANSLATED')) {
               str = str.substring(0, str.length - 15);
             }
-            entry.addCtx(TranslationContext.FromString(str));
-            if (state !== LoadPatchFileState.Oringal) {
+            entry.addCtx(ctxFromStr(str));
+            if (
+              state !== LoadPatchFileState.Oringal &&
+              state !== LoadPatchFileState.Context
+            ) {
               throw new Error(`Unexpected CONTEXT in state ${state}`);
             }
             state = LoadPatchFileState.Context;
@@ -217,7 +247,8 @@ export class TranslationDict {
             this.warn(patchPath, i, `Unknown instruction: ${line}`);
           }
         } catch (e) {
-          throw new Error(this.locstr(patchPath, i, e.message));
+          e.message = `${patchPath}:${i + 1}: ${e.message}`;
+          throw e;
         }
         continue;
       }
@@ -245,6 +276,16 @@ export class TranslationDict {
       }
       patchMap[patchFile].push(entry);
     }
+    // Here patchMap is already finalized, so if any new entrioes are added,
+    // they won't be written to the patch file. Only new contexts added to
+    // existing entries will take effect.
+    // This might result in some contexts missing patch callback.
+    Object.keys(patchMap)
+      .map((file) => WolfContext.pathResolver.patchPath(file))
+      .filter((patchPath) => fs.existsSync(patchPath))
+      .forEach((patchPath) => {
+        this.load(patchPath);
+      });
     for (const patchFile in patchMap) {
       const patchPath = WolfContext.pathResolver.patchPath(patchFile);
       if (fs.existsSync(patchPath)) {

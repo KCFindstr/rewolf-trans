@@ -1,11 +1,13 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { ISerializable } from '../interfaces';
+import { IContextSupplier, ISerializable } from '../interfaces';
 import { RouteCommand } from './route-command';
 import { createCommand, WolfCommand } from './wolf-command';
+import { TranslationDict } from '../translation/translation-dict';
+import { ContextBuilder } from '../translation/context-builder';
 
-export class WolfEvent implements ISerializable {
+export class WolfEvent implements ISerializable, IContextSupplier {
   id: number;
   name: string;
   x: number;
@@ -38,6 +40,14 @@ export class WolfEvent implements ISerializable {
     );
   }
 
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    for (const page of this.pages) {
+      page.appendContext(ctxBuilder, dict);
+    }
+    ctxBuilder.leave(this);
+  }
+
   serialize(stream: BufferStream) {
     stream.appendBuffer(WOLF_MAP.EVENT_START);
     stream.appendInt(this.id);
@@ -54,7 +64,7 @@ export class WolfEvent implements ISerializable {
   }
 }
 
-export class WolfEventPage implements ISerializable {
+export class WolfEventPage implements ISerializable, IContextSupplier {
   unknown1: number;
   graphicName: string;
   graphicDirection: number;
@@ -108,6 +118,16 @@ export class WolfEventPage implements ISerializable {
       terminator === WOLF_MAP.PAGE_END,
       `Unexpected page terminator ${terminator}`,
     );
+  }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this);
+    for (let i = 0; i < this.commands.length; i++) {
+      ctxBuilder.enter(i);
+      this.commands[i].appendContext(ctxBuilder, dict);
+      ctxBuilder.leave();
+    }
+    ctxBuilder.leave(this);
   }
 
   serialize(stream: BufferStream) {

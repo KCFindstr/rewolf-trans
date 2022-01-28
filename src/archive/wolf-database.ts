@@ -1,13 +1,15 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { BufferStream } from '../buffer-stream';
 import { WOLF_DAT } from '../constants';
-import { ensureDir } from '../util';
+import { forceWriteFile } from '../util';
 import { FileCoder } from './file-coder';
 import { IProjectData } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfType } from './wolf-type';
 import { TranslationDict } from '../translation/translation-dict';
+import { WolfContext } from './wolf-context';
+import { ContextBuilder } from '../translation/context-builder';
+import { escapePath } from '../translation/string-utils';
 
 export class WolfDatabase extends WolfArchive implements IProjectData {
   protected project_: FileCoder;
@@ -86,13 +88,25 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     this.serializeData(dataStream);
     const projectBuffer = projectStream.buffer;
     const dataBuffer = this.file_.crypko.encrypt(dataStream.buffer);
-    ensureDir(path.dirname(projectPath));
-    fs.writeFileSync(projectPath, projectBuffer);
-    ensureDir(path.dirname(dataPath));
-    fs.writeFileSync(dataPath, dataBuffer);
+    forceWriteFile(projectPath, projectBuffer);
+    forceWriteFile(dataPath, dataBuffer);
   }
 
-  override generatePatch(_dict: TranslationDict): void {
-    throw new Error('Method not implemented.');
+  override generatePatch(dict: TranslationDict): void {
+    const pathInfo = path.parse(this.file_.filename);
+    const patchPath = path.join(pathInfo.dir, pathInfo.name);
+    const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
+    const ctxBuilder = new ContextBuilder(relativeFile);
+    ctxBuilder.enter(pathInfo.name);
+    for (let i = 0; i < this.types_.length; i++) {
+      ctxBuilder.enter(i);
+      ctxBuilder.patchFile = path.join(
+        relativeFile,
+        escapePath(this.types_[i].name) + '.txt',
+      );
+      this.types_[i].appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(i);
+    }
+    ctxBuilder.leave(pathInfo.name);
   }
 }

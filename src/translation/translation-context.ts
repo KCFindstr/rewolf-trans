@@ -1,32 +1,22 @@
-import { CTX } from '../constants';
 import { ICustomKey, IString } from '../interfaces';
-import { CommonEventContext } from './common-event-context';
-import { DatabaseContext } from './database-context';
-import { safeSplit } from './string-utils';
-import { GameDatContext } from './game-dat-context';
-import { MapEventContext } from './map-event-context';
+
+type PatchCallbackFn = (original: string, translated: string) => void;
 
 export abstract class TranslationContext implements ICustomKey, IString {
-  static FromString(str: string): TranslationContext {
-    const colonIndex = str.indexOf(':');
-    if (colonIndex < 0) {
-      throw new Error(`Invalid context string: ${str}`);
-    }
-    const type = str.substring(0, colonIndex);
-    const path = safeSplit(str.substring(colonIndex + 1));
-    switch (type) {
-      case CTX.STR.MPS:
-        return MapEventContext.FromPath(path);
-      case CTX.STR.DAT:
-        return GameDatContext.FromPath(path);
-      case CTX.STR.DB:
-        return DatabaseContext.FromPath(path);
-      case CTX.STR.CE:
-        return CommonEventContext.FromPath(path);
-      default:
-        throw new Error(`Unknown context type: ${type}`);
-    }
-  }
+  protected patchCallback_?: PatchCallbackFn;
 
   abstract get key(): string;
+
+  withPatchCallback(callback: PatchCallbackFn): TranslationContext {
+    this.patchCallback_ = callback;
+    return this;
+  }
+
+  patch(original: string, translated: string): void {
+    if (this.patchCallback_) {
+      this.patchCallback_(original, translated);
+    } else {
+      console.log(`Ctx missing patch callback: ${this.key}`);
+    }
+  }
 }

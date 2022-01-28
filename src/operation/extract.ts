@@ -5,6 +5,7 @@ import { PathResolver } from '../archive/path-resolver';
 import { WolfArchive } from '../archive/wolf-archive';
 import { WolfContext } from '../archive/wolf-context';
 import { PATCH_DIR_NAME } from '../constants';
+import { TranslationDict } from '../translation/translation-dict';
 import { ensureDir, getFiles } from '../util';
 
 export async function extract(dir: string, encoding: string) {
@@ -28,4 +29,9 @@ export async function extract(dir: string, encoding: string) {
   for (const archive of archives) {
     archive.parse();
   }
+  const dict = new TranslationDict();
+  for (const archive of archives) {
+    archive.generatePatch(dict);
+  }
+  dict.write();
 }

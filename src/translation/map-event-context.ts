@@ -45,15 +45,15 @@ export class MapEventContext extends TranslationContext {
     return new MapEventContext(
       mapName,
       event.id,
-      page.id,
-      cmdIndex,
+      page.id + 1,
+      cmdIndex + 1,
       name.substring(0, name.length - 7),
     );
   }
 
   static FromPath(path: string[]): MapEventContext {
     if (path.length !== 7) {
-      throw new Error(`Invalid MapEvent path: ${safeJoin(path)}`);
+      throw new Error(`Invalid MapEvent path: ${path}`);
     }
     const [
       mapName,
@@ -65,10 +65,10 @@ export class MapEventContext extends TranslationContext {
       commandName,
     ] = path;
     if (eventStr !== 'events') {
-      throw new Error(`Invalid MapEvent path: ${safeJoin(path)}`);
+      throw new Error(`Invalid MapEvent path: ${path}`);
     }
     if (pagesStr !== 'pages') {
-      throw new Error(`Invalid MapEvent path: ${safeJoin(path)}`);
+      throw new Error(`Invalid MapEvent path: ${path}`);
     }
     return new MapEventContext(
       mapName,
