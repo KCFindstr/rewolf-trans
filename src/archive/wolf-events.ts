@@ -1,13 +1,13 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import { IContextSupplier, ISerializable } from '../interfaces';
+import { IAppendContext, ISerializable } from '../interfaces';
 import { RouteCommand } from './route-command';
 import { createCommand, WolfCommand } from './wolf-command';
 import { TranslationDict } from '../translation/translation-dict';
 import { ContextBuilder } from '../translation/context-builder';
 
-export class WolfEvent implements ISerializable, IContextSupplier {
+export class WolfEvent implements ISerializable, IAppendContext {
   id: number;
   name: string;
   x: number;
@@ -64,7 +64,7 @@ export class WolfEvent implements ISerializable, IContextSupplier {
   }
 }
 
-export class WolfEventPage implements ISerializable, IContextSupplier {
+export class WolfEventPage implements ISerializable, IAppendContext {
   unknown1: number;
   graphicName: string;
   graphicDirection: number;

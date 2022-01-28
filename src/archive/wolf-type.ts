@@ -1,14 +1,13 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_DAT } from '../constants';
 import { FileCoder } from './file-coder';
-import { IContextSupplier, IProjectData } from '../interfaces';
+import { IAppendContext, IProjectData } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
-import { isTranslatable } from '../translation/string-utils';
 import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
 
-export class WolfType implements IProjectData, IContextSupplier {
+export class WolfType implements IProjectData, IAppendContext {
   name: string;
   fields: WolfField[];
   fieldTypeCount: number;
@@ -164,9 +163,9 @@ export class WolfField implements IProjectData {
 }
 
 export type WolfDataKey = WolfField | number;
-export type WolfDataValue = string | number;
+export type WolfDataValue = TranslationString | number;
 
-export class WolfData implements IProjectData, IContextSupplier {
+export class WolfData implements IProjectData, IAppendContext {
   name: string;
   intValues: number[];
   stringValues: TranslationString[];
@@ -196,7 +195,7 @@ export class WolfData implements IProjectData, IContextSupplier {
   getV(key: WolfDataKey): WolfDataValue {
     if (key instanceof WolfField) {
       if (key.isString) {
-        return this.stringValues[key.index].text;
+        return this.stringValues[key.index];
       } else {
         return this.intValues[key.index];
       }
@@ -207,7 +206,7 @@ export class WolfData implements IProjectData, IContextSupplier {
     }
   }
 
-  setV(key: WolfDataKey, value: WolfDataValue, translate = false): void {
+  setV(key: WolfDataKey, value: string | number, translate = false): void {
     if (key instanceof WolfField) {
       if (key.isString) {
         if (translate) {
@@ -230,21 +229,12 @@ export class WolfData implements IProjectData, IContextSupplier {
       .filter((field) => field.isTranslatable)
       .forEach((field) => {
         const value = this.getV(field);
-        if (typeof value !== 'string') {
+        if (!(value instanceof TranslationString)) {
           throw new Error(`WolfType: Invalid value to translate: ${value}`);
         }
-        if (!isTranslatable(value)) {
-          return;
-        }
         ctxBuilder.enter(field.index, field.name);
-        const ctx = ctxBuilder.build();
-        ctx.withPatchCallback((_, translated) => {
-          if (translated.trim().length === 0) {
-            return;
-          }
-          this.setV(field, translated, true);
-        });
-        dict.add(value, ctxBuilder.patchFile, ctx);
+        const ctx = ctxBuilder.build(value);
+        dict.add(value.text, ctxBuilder.patchFile, ctx);
         ctxBuilder.leave(field.index);
       });
   }

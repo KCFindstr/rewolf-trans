@@ -1,12 +1,12 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_CE } from '../constants';
 import { FileCoder } from './file-coder';
-import { IContextSupplier, ISerializable } from '../interfaces';
+import { IAppendContext, ISerializable } from '../interfaces';
 import { createCommand, WolfCommand } from './wolf-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 
-export class WolfCommonEvent implements ISerializable, IContextSupplier {
+export class WolfCommonEvent implements ISerializable, IAppendContext {
   id: number;
   name: string;
   commands: WolfCommand[];

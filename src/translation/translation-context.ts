@@ -1,15 +1,17 @@
 import { ICustomKey, IString } from '../interfaces';
 import { ContextPathPart } from './context-builder';
 import { safeJoin, safeSplit } from './string-utils';
-
-type PatchCallbackFn = (original: string, translated: string) => void;
+import { TranslationString } from './translation-string';
 
 export class TranslationContext implements ICustomKey, IString {
-  protected patchCallback_?: PatchCallbackFn;
   protected paths_: ContextPathPart[];
-  public translated = '';
+  protected original_: string;
 
-  constructor(public type: string, paths: ContextPathPart[]) {
+  constructor(
+    public type: string,
+    public str: TranslationString,
+    paths: ContextPathPart[],
+  ) {
     this.paths_ = [...paths];
   }
 
@@ -20,7 +22,11 @@ export class TranslationContext implements ICustomKey, IString {
     }
     const type = str.substring(0, colonIndex);
     const paths = safeSplit(str.substring(colonIndex + 1));
-    return new TranslationContext(type, paths.map(ContextPathPart.FromString));
+    return new TranslationContext(
+      type,
+      undefined,
+      paths.map(ContextPathPart.FromString),
+    );
   }
 
   get key(): string {
@@ -28,15 +34,14 @@ export class TranslationContext implements ICustomKey, IString {
   }
 
   get isTranslated(): boolean {
-    return this.translated && this.translated.trim().length > 0;
+    return this.str && this.str.isTranslated;
   }
 
-  withPatchCallback(callback: PatchCallbackFn): TranslationContext {
-    this.patchCallback_ = callback;
-    return this;
+  get translated(): string {
+    return this.isTranslated ? this.str.text : '';
   }
 
-  patch(original: string, rhs: TranslationContext): void {
+  patch(rhs: TranslationContext): void {
     if (this.key !== rhs.key) {
       throw new Error(
         `Cannot patch translation entry:\n${this.key}\n<=>\n${rhs.key}`,
@@ -48,12 +53,11 @@ export class TranslationContext implements ICustomKey, IString {
     if (this.isTranslated) {
       throw new Error(`Translation entry already patched: ${this.key}`);
     }
-    this.translated = rhs.translated;
-    if (this.patchCallback_) {
-      this.patchCallback_(original, this.translated);
-    } else {
-      console.log(`Ctx missing patch callback: ${this.key}`);
+    if (!this.str) {
+      console.warn(`Patching empty translation context ${this.key}`);
+      return;
     }
+    this.str.patch(rhs.translated);
   }
 
   toString(): string {

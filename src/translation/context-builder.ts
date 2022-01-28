@@ -1,5 +1,6 @@
 import { IString } from '../interfaces';
 import { TranslationContext } from './translation-context';
+import { TranslationString } from './translation-string';
 
 export class ContextPathPart implements IString {
   constructor(public index: string, public name?: string) {}
@@ -35,7 +36,7 @@ export class ContextBuilder {
     }
   }
 
-  build(): TranslationContext {
-    return new TranslationContext(this.type, this.ctxArr);
+  build(str: TranslationString): TranslationContext {
+    return new TranslationContext(this.type, str, this.ctxArr);
   }
 }

@@ -1,11 +1,7 @@
 import { BufferStream } from '../buffer-stream';
 import { WOLF_MAP } from '../constants';
 import { FileCoder } from './file-coder';
-import {
-  IContextSupplier,
-  ISerializable,
-  ITranslationText,
-} from '../interfaces';
+import { IAppendContext, ISerializable, ITranslationText } from '../interfaces';
 import { RouteCommand } from './route-command';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
@@ -13,7 +9,7 @@ import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
 
 export class WolfCommand
-  implements ISerializable, ITranslationText, IContextSupplier
+  implements ISerializable, ITranslationText, IAppendContext
 {
   constructor(
     public cid: number,
@@ -37,7 +33,7 @@ export class WolfCommand
     stream.appendByte(0);
   }
 
-  getTexts(): string[] {
+  getTexts(): TranslationString[] {
     return [];
   }
 
@@ -53,15 +49,14 @@ export class WolfCommand
     }
     name = name.substring(0, name.length - 7);
     ctxBuilder.enter(name);
-    const ctx = ctxBuilder.build();
-    dict.addSupplier(this, ctxBuilder.patchFile, ctx);
+    dict.addSupplier(ctxBuilder, this, ctxBuilder.patchFile);
     ctxBuilder.leave(name);
   }
 }
 
 export class StringArgsCommand extends WolfCommand {
   override getTexts() {
-    return this.stringArgs.map((str) => str.text);
+    return this.stringArgs;
   }
   override patchText(index: number, value: string): void {
     if (value.trim().length === 0) {

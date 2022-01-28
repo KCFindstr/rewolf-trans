@@ -3,12 +3,14 @@ import { WolfContext } from '../archive/wolf-context';
 import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
 import { ICustomKey, IString, ITranslationText } from '../interfaces';
 import { compareVersion, forceWriteFile, groupBy } from '../util';
+import { ContextBuilder } from './context-builder';
 import {
   escapeMultiline,
   isTranslatable,
   unescapeMultiline,
 } from './string-utils';
 import { TranslationContext } from './translation-context';
+import { TranslationString } from './translation-string';
 
 export class TranslationEntry implements ICustomKey, IString {
   public original: string;
@@ -27,7 +29,7 @@ export class TranslationEntry implements ICustomKey, IString {
     for (const ctx of ctxs) {
       const existing = this.ctx[ctx.key];
       if (existing) {
-        existing.patch(this.original, ctx);
+        existing.patch(ctx);
       } else {
         this.ctx[ctx.key] = ctx;
       }
@@ -129,6 +131,9 @@ export class TranslationDict {
   }
 
   public add(original: string, patchFile: string, context: TranslationContext) {
+    if (!isTranslatable(original)) {
+      return;
+    }
     let entry = this.entries[original];
     if (!entry) {
       entry = new TranslationEntry();
@@ -137,29 +142,24 @@ export class TranslationDict {
     entry.original = original;
     entry.setPatchFileIfEmpty(patchFile);
     entry.addCtx(context);
-    this.entries[original] = entry;
   }
 
   public addSupplier(
+    ctxBuilder: ContextBuilder,
     supplier: ITranslationText,
     patchFile: string,
-    ctx: TranslationContext,
   ) {
-    const texts = supplier.getTexts();
-    texts
-      .filter((text) => isTranslatable(text))
-      .forEach((text) => this.add(text, patchFile, ctx));
-    ctx.withPatchCallback((original, translated) => {
-      for (let i = 0; i < texts.length; i++) {
-        const text = texts[i];
-        if (text === original) {
-          supplier.patchText(i, translated);
-        }
-      }
-    });
+    supplier
+      .getTexts()
+      .forEach((text) =>
+        this.add(text.text, patchFile, ctxBuilder.build(text)),
+      );
   }
 
   public addEntry(entry: TranslationEntry) {
+    if (!entry.isTranslatable) {
+      return;
+    }
     const existingEntry = this.entries[entry.original];
     if (existingEntry) {
       existingEntry.combineWith(entry);
@@ -223,7 +223,10 @@ export class TranslationDict {
           } else if (this.parseInstruction(line, 'END STRING')[0]) {
             entry.original = unescapeMultiline(original.join('\n'));
             Object.values(entry.ctx).forEach((ctx) => {
-              ctx.translated = unescapeMultiline(translated.join('\n'));
+              ctx.str = new TranslationString(
+                unescapeMultiline(translated.join('\n')),
+                true,
+              );
             });
             this.addEntry(entry);
             if (state !== LoadPatchFileState.Translated) {
