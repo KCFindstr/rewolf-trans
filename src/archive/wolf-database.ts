@@ -10,6 +10,7 @@ import { TranslationDict } from '../translation/translation-dict';
 import { WolfContext } from './wolf-context';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
+import { PathResolver } from './path-resolver';
 
 export class WolfDatabase extends WolfArchive implements IProjectData {
   protected project_: FileCoder;
@@ -77,19 +78,22 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     );
     this.types_.forEach((type) => type.readData(this.file_));
     if (this.file_.readByte() !== WOLF_DAT.END) {
-      this.file_.log(`No ${WOLF_DAT.END} found at end of dat`);
+      this.file_.info(`No ${WOLF_DAT.END} found at end of dat`);
     }
   }
 
-  write(projectPath: string, dataPath: string): void {
+  write(pathResolver: PathResolver): void {
     const projectStream = new BufferStream();
     const dataStream = new BufferStream();
     this.serializeProject(projectStream);
     this.serializeData(dataStream);
     const projectBuffer = projectStream.buffer;
     const dataBuffer = this.file_.crypko.encrypt(dataStream.buffer);
-    forceWriteFile(projectPath, projectBuffer);
-    forceWriteFile(dataPath, dataBuffer);
+    forceWriteFile(
+      pathResolver.translatePath(this.projectFilename),
+      projectBuffer,
+    );
+    forceWriteFile(pathResolver.translatePath(this.filename), dataBuffer);
   }
 
   override generatePatch(dict: TranslationDict): void {

@@ -1,35 +1,41 @@
 import { CTX } from '../constants';
 import { ICustomKey, IString } from '../interfaces';
 import { ContextPathPart } from './context-builder';
-import { safeJoin, safeSplit } from './string-utils';
+import { isTranslatable, safeJoin, safeSplit } from './string-utils';
 import { TranslationDict } from './translation-dict';
 import { TranslationString } from './translation-string';
 import { findBestMatch } from 'string-similarity';
+import { logger } from '../logger';
 
 function MatchCtx(
   original: string,
-  contexts: Record<string, TranslationContext[]>,
+  dict: TranslationDict,
   toMatch: TranslationContext,
 ): TranslationContext {
-  const candidates: Record<string, TranslationContext> = {};
-  for (const text in contexts) {
-    const existingCtxs = contexts[text];
-    for (const existingCtx of existingCtxs) {
-      if (existingCtx.key.includes(toMatch.key)) {
-        candidates[text] = existingCtx;
-        break;
-      }
-    }
-  }
-  const matchTexts = Object.keys(candidates);
-  if (matchTexts.length === 0) {
+  if (!isTranslatable(original)) {
+    dict.debug(`Text not translatable, ignored: ${toMatch.paths}`);
     return null;
   }
+  const node = dict.ctxTrie.getNode(toMatch);
+  if (!node) {
+    dict.warn(`Cannot locate on trie: ${toMatch.paths}`);
+    return null;
+  }
+  const candidates = [...node.walk()];
+  if (candidates.length === 0) {
+    dict.warn(`No text found under context: ${toMatch.paths}`);
+    return null;
+  }
+  const matchTexts = candidates.map((candidate) => candidate[0].original);
   const bestMatch = findBestMatch(original, matchTexts);
-  if (bestMatch.bestMatch.rating <= 0.5) {
-    return null;
+  if (bestMatch.bestMatch.rating <= 0.999) {
+    dict.info(
+      `Vague match for\n${original}\n<${'='.repeat(30)}>\n${
+        bestMatch.bestMatch.target
+      }`,
+    );
   }
-  return candidates[bestMatch.bestMatch.target];
+  return candidates[bestMatch.bestMatchIndex][1];
 }
 
 export class TranslationContext implements ICustomKey, IString {
@@ -113,10 +119,8 @@ export class TranslationContext implements ICustomKey, IString {
     }
 
     // Find best match in dict
-    const contexts = dict.contexts;
-    const match = MatchCtx(original, contexts, ret);
+    const match = MatchCtx(original, dict, ret);
     if (!match) {
-      console.log(`No match context for ${paths}`);
       return null;
     }
     ret.paths = match.paths;
@@ -153,10 +157,10 @@ export class TranslationContext implements ICustomKey, IString {
       return;
     }
     if (this.isTranslated) {
-      console.warn(`Translation overwrite: ${this.key}`);
+      logger.debug(`Translation overwrite: ${this.key}`);
     }
     if (!this.str) {
-      console.warn(`Patching empty translation context ${this.key}`);
+      logger.debug(`Patching empty translation context ${this.key}`);
       return;
     }
     this.str.patch(rhs.translated);

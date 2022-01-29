@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
+import { logger } from '../logger';
 import { TranslationString } from '../translation/translation-string';
 import { Crypko } from './crypko';
 import { WolfContext } from './wolf-context';
@@ -19,7 +20,7 @@ export class FileCoder {
       this.crypko_ = new Crypko(buffer, seedIndices_);
       this.buffer_ = this.crypko_.decrypt();
     } catch (e) {
-      console.log(`Failed to read ${filename_}: ${e.stack || e}`);
+      logger.info(`Failed to read ${filename_}: ${e.stack || e}`);
       this.buffer_ = null;
     }
     this.offset_ = 0;
@@ -75,8 +76,8 @@ export class FileCoder {
     this.offset_ += expected.length;
   }
 
-  log(msg: string) {
-    console.log(`${this.locstr} > ${msg}`);
+  info(msg: string) {
+    logger.info(`${this.locstr} > ${msg}`);
   }
 
   assert(condition: boolean, msg = 'Assertion failed') {

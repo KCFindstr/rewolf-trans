@@ -2,6 +2,7 @@ import { BufferStream } from './buffer-stream';
 import { FileCoder } from './archive/file-coder';
 import { TranslationDict } from './translation/translation-dict';
 import { ContextBuilder } from './translation/context-builder';
+import { PathResolver } from './archive/path-resolver';
 
 export interface ISerializable {
   serialize(stream: BufferStream): void;
@@ -19,6 +20,10 @@ export interface IGeneratePatch {
 
 export interface IAppendContext {
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void;
+}
+
+export interface IWriteData {
+  write(pathResolver: PathResolver): void;
 }
 
 export interface ICustomKey {

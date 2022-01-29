@@ -8,6 +8,7 @@ import { WolfEvent } from './wolf-events';
 import { TranslationDict } from '../translation/translation-dict';
 import { WolfContext } from './wolf-context';
 import { ContextBuilder } from '../translation/context-builder';
+import { PathResolver } from './path-resolver';
 
 export enum WolfArchiveType {
   Invalid,
@@ -88,12 +89,6 @@ export class WolfMap extends WolfArchive implements ISerializable {
     stream.appendByte(WOLF_MAP.EVENT_FINISH_INDICATOR);
   }
 
-  write(filepath: string) {
-    const stream = new BufferStream();
-    this.serialize(stream);
-    forceWriteFile(filepath, stream.buffer);
-  }
-
   override generatePatch(dict: TranslationDict): void {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, `${pathInfo.name}.txt`);
@@ -106,5 +101,11 @@ export class WolfMap extends WolfArchive implements ISerializable {
       ctxBuilder.leave(event.id);
     }
     ctxBuilder.leave(pathInfo.name);
+  }
+
+  write(pathResolver: PathResolver): void {
+    const stream = new BufferStream();
+    this.serialize(stream);
+    forceWriteFile(pathResolver.translatePath(this.filename), stream.buffer);
   }
 }

@@ -5,7 +5,8 @@ import { ISerializable } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
 import { TranslationDict } from '../translation/translation-dict';
-import { addLeadingChar } from '../util';
+import { addLeadingChar, forceWriteFile } from '../util';
+import { PathResolver } from './path-resolver';
 import { WolfArchive } from './wolf-archive';
 import { WolfCommonEvent } from './wolf-common-event';
 import { WolfContext } from './wolf-context';
@@ -28,6 +29,12 @@ export class WolfCE extends WolfArchive implements ISerializable {
       this.events_[event.id] = event;
     }
     this.file_.expectByte(WOLF_CE.INDICATOR2);
+  }
+
+  write(pathResolver: PathResolver): void {
+    const stream = new BufferStream();
+    this.serialize(stream);
+    forceWriteFile(pathResolver.translatePath(this.filename), stream.buffer);
   }
 
   get events() {

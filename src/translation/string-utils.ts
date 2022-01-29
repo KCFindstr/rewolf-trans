@@ -109,5 +109,5 @@ export function unescapeMultiline(str: string) {
 }
 
 export function isTranslatable(str: string) {
-  return str.trim().length > 0;
+  return !str.match(/^[\n\t ]*$/s);
 }

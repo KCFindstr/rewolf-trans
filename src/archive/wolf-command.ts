@@ -401,7 +401,7 @@ export function createCommand(file: FileCoder): WolfCommand {
   } else if (terminator === WOLF_MAP.COMMAND_TERMINATOR) {
     let commandClass = CID_TO_CLASS[cid];
     if (!commandClass) {
-      file.log(`Unknown command: ${cid}`);
+      file.info(`Unknown command: ${cid}`);
       commandClass = WolfCommand;
     }
     return new commandClass(cid, args, stringArgs, indent);

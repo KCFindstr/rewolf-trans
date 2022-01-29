@@ -4,6 +4,7 @@ import { loadArchive } from '../archive/auto-load';
 import { PathResolver } from '../archive/path-resolver';
 import { WolfArchive } from '../archive/wolf-archive';
 import { WolfContext } from '../archive/wolf-context';
+import { logger } from '../logger';
 import { TranslationDict } from '../translation/translation-dict';
 import { Constructor, getFiles } from '../util';
 
@@ -22,7 +23,7 @@ export class WolfGame {
     for (const file of files) {
       const archive = loadArchive(file);
       if (archive?.isValid) {
-        console.log(`Valid archive: ${archive.filename}`);
+        logger.debug(`Valid archive: ${archive.filename}`);
         this.archives_.push(archive);
       }
     }
@@ -56,7 +57,6 @@ export class WolfGame {
     for (const archive of this.archives_) {
       archive.generatePatch(this.dict_);
     }
-    this.dict_.refreshContexts();
   }
 
   public loadPatch(patchDir: string) {
@@ -68,5 +68,12 @@ export class WolfGame {
   public writePatch(patchDir: string) {
     WolfContext.pathResolver.toDir = patchDir;
     this.dict_.write();
+  }
+
+  public writeData(dataDir: string) {
+    WolfContext.pathResolver.toDir = dataDir;
+    for (const archive of this.archives_) {
+      archive.write(WolfContext.pathResolver);
+    }
   }
 }
