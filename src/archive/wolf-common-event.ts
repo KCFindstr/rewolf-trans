@@ -103,19 +103,19 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
     ctxBuilder.leave('cmd');
 
     ctxBuilder.enter('strarg');
-    dict.addTexts(ctxBuilder, EntryDangerLevel.Warn, this.strArgs);
+    dict.addTexts(ctxBuilder, EntryDangerLevel.Danger, this.strArgs);
     ctxBuilder.leave('strarg');
 
     ctxBuilder.enter('optarg');
     for (let i = 0; i < this.spOptionArgs.length; i++) {
       ctxBuilder.enter(i);
-      dict.addTexts(ctxBuilder, EntryDangerLevel.Warn, this.spOptionArgs[i]);
+      dict.addTexts(ctxBuilder, EntryDangerLevel.Danger, this.spOptionArgs[i]);
       ctxBuilder.leave(i);
     }
     ctxBuilder.leave('optarg');
 
     ctxBuilder.enter('cself');
-    dict.addTexts(ctxBuilder, EntryDangerLevel.Warn, this.cSelf);
+    dict.addTexts(ctxBuilder, EntryDangerLevel.Danger, this.cSelf);
     ctxBuilder.leave('cself');
   }
 }
