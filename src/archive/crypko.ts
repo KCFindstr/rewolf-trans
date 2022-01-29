@@ -31,7 +31,7 @@ export class Crypko {
 
   encrypt(data = this.data_) {
     if (!this.isEncrypted) {
-      return;
+      return data;
     }
     const result = Buffer.concat([this.cryptHeader_, data]);
     crypt(result.slice(this.cryptHeader_.length), this.seeds_);

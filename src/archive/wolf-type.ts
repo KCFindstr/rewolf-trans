@@ -8,7 +8,7 @@ import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
 
 export class WolfType implements IProjectData, IAppendContext {
-  name: string;
+  name: TranslationString;
   fields: WolfField[];
   fieldTypeCount: number;
   data: WolfData[];
@@ -16,7 +16,7 @@ export class WolfType implements IProjectData, IAppendContext {
   unknown1: number;
 
   constructor(file: FileCoder) {
-    this.name = file.readString();
+    this.name = file.readTString();
     // Field
     this.fields = file.readArray((file) => new WolfField(file));
 
@@ -87,7 +87,7 @@ export class WolfType implements IProjectData, IAppendContext {
   }
 
   serializeProject(stream: BufferStream): void {
-    stream.appendString(this.name);
+    stream.appendTString(this.name);
     stream.appendCustomArray(this.fields, (stream, field) =>
       field.serializeProject(stream),
     );
@@ -117,7 +117,7 @@ export class WolfType implements IProjectData, IAppendContext {
 }
 
 export class WolfField implements IProjectData, IAppendContext {
-  name: string;
+  name: TranslationString;
   type: number;
   unknown1: string;
   stringArgs: TranslationString[];
@@ -126,7 +126,7 @@ export class WolfField implements IProjectData, IAppendContext {
   indexInfo: number;
 
   constructor(file: FileCoder) {
-    this.name = file.readString();
+    this.name = file.readTString();
   }
 
   get isString() {
@@ -158,7 +158,7 @@ export class WolfField implements IProjectData, IAppendContext {
   }
 
   serializeProject(stream: BufferStream): void {
-    stream.appendString(this.name);
+    stream.appendTString(this.name);
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
@@ -170,13 +170,13 @@ export type WolfDataKey = WolfField | number;
 export type WolfDataValue = TranslationString | number;
 
 export class WolfData implements IProjectData, IAppendContext {
-  name: string;
+  name: TranslationString;
   intValues: number[];
   stringValues: TranslationString[];
   fields: WolfField[];
 
   constructor(file: FileCoder) {
-    this.name = file.readString();
+    this.name = file.readTString();
   }
 
   readData(file: FileCoder, fields: WolfField[]): void {
@@ -193,7 +193,7 @@ export class WolfData implements IProjectData, IAppendContext {
   }
 
   serializeProject(stream: BufferStream): void {
-    stream.appendString(this.name);
+    stream.appendTString(this.name);
   }
 
   getV(key: WolfDataKey): WolfDataValue {

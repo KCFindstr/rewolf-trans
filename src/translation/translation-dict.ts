@@ -60,9 +60,7 @@ export class TranslationEntry implements ICustomKey, IString {
   addEntry(rhs: TranslationEntry) {
     if (this.original !== rhs.original) {
       throw new Error(
-        `Cannot add translation entry:\n${this.original}\n<${'='.repeat(
-          30,
-        )}>\n${rhs.original}`,
+        `Cannot add translation entry:\n${this.original}\n<^^^^^ EXISTING ^^^^^ // vvvvv NEW vvvvv>\n${rhs.original}`,
       );
     }
     this.setPatchFileIfEmpty(rhs.patchFile);
@@ -81,15 +79,23 @@ export class TranslationEntry implements ICustomKey, IString {
   }
 
   toString(): string {
-    const ctxs = groupBy(Object.values(this.ctx), (ctx) => ctx.translated);
+    const ctxArr = Object.values(this.ctx);
+    const validTranslated = ctxArr.find((ctx) => ctx.isTranslated);
+    if (validTranslated) {
+      ctxArr
+        .filter((ctx) => !ctx.isTranslated)
+        .forEach((ctx) => ctx.str.patch(validTranslated.translated));
+    }
+    const ctxs = groupBy(ctxArr, (ctx) => ctx.translated);
     const lines: string[] = [];
     for (const translated in ctxs) {
       const arr = ctxs[translated];
+      const prefix = translated ? `CONTEXT` : `CONTEXT [NEW]`;
       arr.sort((a, b) => a.key.localeCompare(b.key));
       lines.push(
         '> BEGIN STRING',
         escapeMultiline(this.original),
-        ...arr.map((ctx) => `> CONTEXT [NEW] ${ctx.toString()}`),
+        ...arr.map((ctx) => `> ${prefix} ${ctx.toString()}`),
         escapeMultiline(translated),
         '> END STRING',
         '',

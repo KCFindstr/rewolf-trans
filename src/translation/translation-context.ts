@@ -7,6 +7,12 @@ import { TranslationString } from './translation-string';
 import { findBestMatch } from 'string-similarity';
 import { logger } from '../logger';
 
+export enum ContextDangerLevel {
+  Regular = 'Regular',
+  Warning = 'Warning',
+  Essential = 'Essential',
+}
+
 function MatchCtx(
   original: string,
   dict: TranslationDict,
@@ -30,9 +36,7 @@ function MatchCtx(
   const bestMatch = findBestMatch(original, matchTexts);
   if (bestMatch.bestMatch.rating <= 0.999) {
     dict.info(
-      `Vague match for\n${original}\n<${'='.repeat(30)}>\n${
-        bestMatch.bestMatch.target
-      }`,
+      `Vague match for\n${original}\n<^^^^^ PATCH ^^^^^ // vvvvv GAME vvvvv>\n${bestMatch.bestMatch.target}`,
     );
   }
   return candidates[bestMatch.bestMatchIndex][1];
@@ -46,6 +50,7 @@ export class TranslationContext implements ICustomKey, IString {
     public type: string,
     public str: TranslationString,
     paths: ContextPathPart[] = [],
+    public danger: ContextDangerLevel = ContextDangerLevel.Regular,
   ) {
     this.paths = paths;
   }
@@ -60,7 +65,7 @@ export class TranslationContext implements ICustomKey, IString {
     return new TranslationContext(
       type,
       undefined,
-      paths.map(ContextPathPart.FromString),
+      paths.map((path) => ContextPathPart.FromString(path)),
     );
   }
 
@@ -93,7 +98,8 @@ export class TranslationContext implements ICustomKey, IString {
       const commandName = paths[2].index;
       newPaths.push(new ContextPathPart(eventId));
       newPaths.push(new ContextPathPart('cmd'));
-      newPaths.push(new ContextPathPart(cmdIndex, commandName));
+      newPaths.push(new ContextPathPart(cmdIndex));
+      newPaths.push(new ContextPathPart(commandName));
     } else if (ctx.type === CTX.STR.MPS) {
       if (paths.length !== 7) {
         throw new Error(`Invalid MPS context: ${paths}`);
@@ -113,7 +119,8 @@ export class TranslationContext implements ICustomKey, IString {
       newPaths.push(new ContextPathPart(mapName));
       newPaths.push(new ContextPathPart(eventNum));
       newPaths.push(new ContextPathPart(pageNum));
-      newPaths.push(new ContextPathPart(cmdIndex, commandName));
+      newPaths.push(new ContextPathPart(cmdIndex));
+      newPaths.push(new ContextPathPart(commandName));
     } else {
       throw new Error(`Cannot parse legacy context type: ${ctx.type}`);
     }
@@ -162,6 +169,14 @@ export class TranslationContext implements ICustomKey, IString {
     if (!this.str) {
       logger.debug(`Patching empty translation context ${this.key}`);
       return;
+    }
+    for (let i = 0; i < this.paths.length; i++) {
+      if (
+        this.paths[i].name &&
+        this.paths[i].name.text !== rhs.paths[i].name.text
+      ) {
+        this.paths[i].name.patch(rhs.paths[i].name.text);
+      }
     }
     this.str.patch(rhs.translated);
   }

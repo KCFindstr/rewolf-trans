@@ -10,6 +10,8 @@ export function apply(gameDir: string, patchDir: string, outDir: string) {
   game.parse();
   game.generatePatch();
   game.loadPatch(patchDir);
-  fs.rmSync(outDir, { recursive: true });
+  if (fs.existsSync(outDir)) {
+    fs.rmSync(outDir, { recursive: true });
+  }
   game.writeData(outDir);
 }

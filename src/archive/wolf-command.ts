@@ -40,12 +40,14 @@ export class WolfCommand implements ISerializable, IAppendContext {
   }
 
   getTexts(): TranslationString[] {
-    return [];
+    return this.stringArgs;
   }
 
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(this.name);
     dict.addTexts(ctxBuilder, this.getTexts());
+    ctxBuilder.leave(this.name);
   }
 }
 

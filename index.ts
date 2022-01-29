@@ -91,4 +91,4 @@ if (require.main === module) {
   void main();
 }
 
-export { extract };
+export { extract, apply };

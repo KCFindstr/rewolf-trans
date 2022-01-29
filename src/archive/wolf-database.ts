@@ -107,7 +107,7 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
       ctxBuilder.enter(i, type.name);
       ctxBuilder.patchFile = path.join(
         relativeFile,
-        escapePath(type.name) + '.txt',
+        escapePath(type.name.text) + '.txt',
       );
       type.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
