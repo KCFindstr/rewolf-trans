@@ -49,7 +49,7 @@ export class WolfCE extends WolfArchive implements ISerializable {
     for (const event of this.events_) {
       ctxBuilder.patchFile = path.join(
         relativeFile,
-        `${addLeadingChar(event.id, 3, '0')}_${escapePath(event.name)}.txt`,
+        `${addLeadingChar(event.id, 3, '0')}_${escapePath(event.name)}`,
       );
       ctxBuilder.enter(event.id);
       event.appendContext(ctxBuilder, dict);

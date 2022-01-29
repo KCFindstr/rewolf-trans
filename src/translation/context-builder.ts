@@ -37,6 +37,11 @@ export class ContextPathPart implements IString {
 
 export class ContextBuilder {
   public ctxArr: ContextPathPart[] = [];
+
+  /**
+   * @param patchFile Prefix of patch file without extension.
+   * @param type One of the context types. See CTX.STR
+   */
   constructor(public patchFile: string, public type: string) {}
 
   enter(ctx: string | number, name?: TranslationString) {

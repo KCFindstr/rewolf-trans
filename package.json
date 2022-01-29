@@ -11,6 +11,7 @@
     "dev": "ts-node index.ts",
     "build": "tsc",
     "installdeps": "npm i -g typescript @types/node",
+    "lint": "eslint \"src/**/*.ts\" index.ts",
     "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

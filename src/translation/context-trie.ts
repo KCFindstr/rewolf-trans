@@ -1,27 +1,26 @@
 import { CTX } from '../constants';
 import { TranslationContext } from './translation-context';
-import { TranslationEntry } from './translation-dict';
 
 export class ContextTrieNode {
   children: Record<string, ContextTrieNode> = {};
 
-  constructor(
-    public ctx?: TranslationContext,
-    public entry?: TranslationEntry,
-  ) {}
+  constructor(protected ctx_?: TranslationContext) {}
 
   get hasData() {
-    return this.ctx && this.entry;
+    return !!this.ctx_;
   }
 
-  setCtx(entry: TranslationEntry, ctx: TranslationContext): void {
-    this.entry = entry;
-    this.ctx = ctx;
+  get ctx() {
+    return this.ctx_;
   }
 
-  *walk(): IterableIterator<[TranslationEntry, TranslationContext]> {
+  set ctx(ctx: TranslationContext) {
+    this.ctx_ = ctx;
+  }
+
+  *walk(): IterableIterator<TranslationContext> {
     if (this.ctx) {
-      yield [this.entry, this.ctx];
+      yield this.ctx;
     }
     for (const child of Object.values(this.children)) {
       yield* child.walk();
@@ -38,7 +37,7 @@ export class ContextTrie {
     }
   }
 
-  addCtx(entry: TranslationEntry, ctx: TranslationContext) {
+  addCtx(ctx: TranslationContext) {
     let node = this.root_.children[ctx.type];
     if (!node) {
       throw new Error(`Invalid context type: ${ctx.type}`);
@@ -49,7 +48,7 @@ export class ContextTrie {
       }
       node = node.children[part.index];
     }
-    node.setCtx(entry, ctx);
+    node.ctx = ctx;
   }
 
   getNode(ctx: TranslationContext): ContextTrieNode {

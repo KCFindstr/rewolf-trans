@@ -80,7 +80,7 @@ export function safeSplit(str: string, separators = SEPARATOR): string[] {
     }
   }
   ret.push(str.substring(last));
-  return ret.map((str) => unescapeString(str, separators));
+  return ret.map((s) => unescapeString(s, separators));
 }
 
 export function escapePath(str: string) {
@@ -109,5 +109,5 @@ export function unescapeMultiline(str: string) {
 }
 
 export function isTranslatable(str: string) {
-  return !str.match(/^[\n\t ]*$/s);
+  return str && !str.match(/^[\n\t ]*$/s);
 }

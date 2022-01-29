@@ -6,6 +6,7 @@ import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
+import { EntryDangerLevel } from '../translation/translation-entry';
 
 export class WolfType implements IProjectData, IAppendContext {
   name: TranslationString;
@@ -18,10 +19,10 @@ export class WolfType implements IProjectData, IAppendContext {
   constructor(file: FileCoder) {
     this.name = file.readTString();
     // Field
-    this.fields = file.readArray((file) => new WolfField(file));
+    this.fields = file.readArray((f) => new WolfField(f));
 
     // Data
-    this.data = file.readArray((file) => new WolfData(file));
+    this.data = file.readArray((f) => new WolfData(f));
     this.description = file.readString();
 
     // Field Type
@@ -38,14 +39,14 @@ export class WolfType implements IProjectData, IAppendContext {
 
     // String args
     file
-      .readArray((file) => file.readTStringArray())
+      .readArray((f) => f.readTStringArray())
       .map((val, index) => {
         this.fields[index].stringArgs = val;
       });
 
     // Args
     file
-      .readArray((file) => file.readUIntArray())
+      .readArray((f) => f.readUIntArray())
       .map((val, index) => {
         this.fields[index].args = val;
       });
@@ -55,6 +56,7 @@ export class WolfType implements IProjectData, IAppendContext {
       this.fields[index].defaultValue = val;
     });
   }
+
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     for (let i = 0; i < this.data.length; i++) {
       const datum = this.data[i];
@@ -78,22 +80,16 @@ export class WolfType implements IProjectData, IAppendContext {
   serializeData(stream: BufferStream): void {
     stream.appendBuffer(WOLF_DAT.TYPE_SEPARATOR);
     stream.appendInt(this.unknown1);
-    stream.appendCustomArray(this.fields, (stream, field) =>
-      field.serializeData(stream),
-    );
-    stream.appendCustomArray(this.data, (stream, data) =>
-      data.serializeData(stream),
-    );
+    stream.appendCustomArray(this.fields, (s, field) => field.serializeData(s));
+    stream.appendCustomArray(this.data, (s, data) => data.serializeData(s));
   }
 
   serializeProject(stream: BufferStream): void {
     stream.appendTString(this.name);
-    stream.appendCustomArray(this.fields, (stream, field) =>
-      field.serializeProject(stream),
+    stream.appendCustomArray(this.fields, (s, field) =>
+      field.serializeProject(s),
     );
-    stream.appendCustomArray(this.data, (stream, data) =>
-      data.serializeProject(stream),
-    );
+    stream.appendCustomArray(this.data, (s, data) => data.serializeProject(s));
     stream.appendString(this.description);
 
     // Misc field data
@@ -104,12 +100,12 @@ export class WolfType implements IProjectData, IAppendContext {
     }
     stream.appendStringArray(this.fields.map((field) => field.unknown1));
 
-    stream.appendCustomArray(this.fields, (stream, field) => {
-      stream.appendTStringArray(field.stringArgs);
+    stream.appendCustomArray(this.fields, (s, field) => {
+      s.appendTStringArray(field.stringArgs);
     });
 
-    stream.appendCustomArray(this.fields, (stream, field) => {
-      stream.appendIntArray(field.args);
+    stream.appendCustomArray(this.fields, (s, field) => {
+      s.appendIntArray(field.args);
     });
 
     stream.appendIntArray(this.fields.map((field) => field.defaultValue));
@@ -162,7 +158,7 @@ export class WolfField implements IProjectData, IAppendContext {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    dict.addTexts(ctxBuilder, this.stringArgs);
+    dict.addTexts(ctxBuilder, EntryDangerLevel.Warn, this.stringArgs);
   }
 }
 
@@ -237,7 +233,12 @@ export class WolfData implements IProjectData, IAppendContext {
           throw new Error(`WolfType: Invalid value to translate: ${value}`);
         }
         ctxBuilder.enter(field.index, field.name);
-        dict.add(value.text, ctxBuilder.patchFile, ctxBuilder.build(value));
+        dict.add(
+          value.text,
+          EntryDangerLevel.Warn,
+          ctxBuilder.patchFile,
+          ctxBuilder.build(value),
+        );
         field.appendContext(ctxBuilder, dict);
         ctxBuilder.leave(field.index);
       });

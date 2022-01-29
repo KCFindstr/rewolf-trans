@@ -20,6 +20,7 @@ module.exports = {
     'eqeqeq': 'warn',
     'no-return-await': 'warn',
     'linebreak-style': ['error', 'unix'],
+    '@typescript-eslint/no-shadow': ['warn', { 'builtinGlobals': true, 'hoist': 'functions', 'allow': [] }],
     '@typescript-eslint/no-floating-promises': 'warn',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',

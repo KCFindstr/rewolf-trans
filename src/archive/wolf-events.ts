@@ -94,18 +94,10 @@ export class WolfEventPage implements ISerializable, IAppendContext {
     this.flags = this.file.readByte();
     // Read routes
     this.routeFlags = this.file.readByte();
-    const routeCount = this.file.readUIntLE();
-    this.routes = [];
-    for (let i = 0; i < routeCount; i++) {
-      this.routes.push(new RouteCommand(this.file));
-    }
+    this.routes = this.file.readArray((f) => new RouteCommand(f));
 
     // Read commands
-    const commandCount = this.file.readUIntLE();
-    this.commands = [];
-    for (let i = 0; i < commandCount; i++) {
-      this.commands.push(createCommand(this.file));
-    }
+    this.commands = this.file.readArray((f) => createCommand(f));
     this.file.expect(WOLF_MAP.COMMAND_END);
 
     // Read other options

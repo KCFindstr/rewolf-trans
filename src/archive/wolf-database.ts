@@ -45,15 +45,13 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     } else {
       stream.appendBuffer(WOLF_DAT.HEADER);
     }
-    stream.appendCustomArray(this.types_, (stream, type) =>
-      type.serializeData(stream),
-    );
+    stream.appendCustomArray(this.types_, (s, type) => type.serializeData(s));
     stream.appendByte(WOLF_DAT.END);
   }
 
   serializeProject(stream: BufferStream): void {
-    stream.appendCustomArray(this.types_, (stream, type) => {
-      type.serializeProject(stream);
+    stream.appendCustomArray(this.types_, (s, type) => {
+      type.serializeProject(s);
     });
   }
 
@@ -107,7 +105,7 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
       ctxBuilder.enter(i, type.name);
       ctxBuilder.patchFile = path.join(
         relativeFile,
-        escapePath(type.name.text) + '.txt',
+        escapePath(type.name.text),
       );
       type.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);

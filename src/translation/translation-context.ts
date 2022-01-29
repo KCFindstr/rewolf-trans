@@ -6,12 +6,7 @@ import { TranslationDict } from './translation-dict';
 import { TranslationString } from './translation-string';
 import { findBestMatch } from 'string-similarity';
 import { logger } from '../logger';
-
-export enum ContextDangerLevel {
-  Regular = 'Regular',
-  Warning = 'Warning',
-  Essential = 'Essential',
-}
+import { TranslationEntry } from './translation-entry';
 
 function MatchCtx(
   original: string,
@@ -32,27 +27,28 @@ function MatchCtx(
     dict.warn(`No text found under context: ${toMatch.paths}`);
     return null;
   }
-  const matchTexts = candidates.map((candidate) => candidate[0].original);
+  const matchTexts = candidates.map((candidate) => candidate.entry.original);
   const bestMatch = findBestMatch(original, matchTexts);
   if (bestMatch.bestMatch.rating <= 0.999) {
     dict.info(
       `Vague match for\n${original}\n<^^^^^ PATCH ^^^^^ // vvvvv GAME vvvvv>\n${bestMatch.bestMatch.target}`,
     );
   }
-  return candidates[bestMatch.bestMatchIndex][1];
+  return candidates[bestMatch.bestMatchIndex];
 }
 
 export class TranslationContext implements ICustomKey, IString {
+  protected entry_: TranslationEntry;
   protected paths_: ContextPathPart[];
-  protected original_: string;
 
   constructor(
     public type: string,
-    public str: TranslationString,
+    public text: TranslationString,
     paths: ContextPathPart[] = [],
-    public danger: ContextDangerLevel = ContextDangerLevel.Regular,
+    entry?: TranslationEntry,
   ) {
     this.paths = paths;
+    this.entry = entry;
   }
 
   static FromStr(str: string): TranslationContext {
@@ -81,7 +77,7 @@ export class TranslationContext implements ICustomKey, IString {
       str = str.substring(0, str.length - 15);
     }
     const ctx = TranslationContext.FromStr(str);
-    const ret = new TranslationContext(ctx.type, ctx.str);
+    const ret = new TranslationContext(ctx.type, ctx.text);
     const paths = ctx.paths;
     if (ctx.type === CTX.STR.DB) {
       if (paths.length !== 4) {
@@ -104,7 +100,6 @@ export class TranslationContext implements ICustomKey, IString {
       if (paths.length !== 7) {
         throw new Error(`Invalid MPS context: ${paths}`);
       }
-      const ret = new TranslationContext(ctx.type, ctx.str);
       const newPaths = ret.paths;
       const mapName = paths[0].index;
       const eventsStr = paths[1].index;
@@ -142,31 +137,58 @@ export class TranslationContext implements ICustomKey, IString {
     this.paths_ = [...value];
   }
 
+  get entry(): TranslationEntry {
+    return this.entry_;
+  }
+
+  set entry(entry: TranslationEntry) {
+    if (!this.isTranslated && entry) {
+      if (entry.original !== this.text.text) {
+        throw new Error(
+          `Cannot add translation entry:\n${entry.original}\n<^^^^^ EXISTING ^^^^^ // vvvvv NEW vvvvv>\n${this.text.text}\nContext: ${this.paths}`,
+        );
+      }
+    }
+    if (this.entry_) {
+      this.entry_.removeCtx(this);
+    }
+    this.entry_ = entry;
+    if (entry) {
+      entry.addCtx(this);
+    }
+  }
+
   get key(): string {
     return `${this.type}:${safeJoin(this.paths_.map((p) => p.index))}`;
   }
 
   get isTranslated(): boolean {
-    return this.str && this.str.isTranslated;
+    return this.text && this.text.isTranslated;
   }
 
   get translated(): string {
-    return this.isTranslated ? this.str.text : '';
+    return this.isTranslated ? this.text.text : '';
   }
 
   patch(rhs: TranslationContext): void {
     if (this.key !== rhs.key) {
       throw new Error(
-        `Cannot patch translation entry:\n${this.key}\n<=>\n${rhs.key}`,
+        `Cannot patch translation entry:\n${this.key}\n<==========>\n${rhs.key}`,
       );
     }
     if (!rhs.isTranslated) {
       return;
     }
     if (this.isTranslated) {
-      logger.debug(`Translation overwrite: ${this.key}`);
+      if (this.translated === rhs.translated) {
+        logger.debug(`Same translation overwrite: ${this.key}`);
+      } else {
+        logger.warn(
+          `Translation overwrite: ${this.key}\n${this.translated}\n<^^^^^ EXISTING ^^^^^ // vvvvv NEW vvvvv>\n${rhs.translated}`,
+        );
+      }
     }
-    if (!this.str) {
+    if (!this.text) {
       logger.debug(`Patching empty translation context ${this.key}`);
       return;
     }
@@ -178,7 +200,7 @@ export class TranslationContext implements ICustomKey, IString {
         this.paths[i].name.patch(rhs.paths[i].name.text);
       }
     }
-    this.str.patch(rhs.translated);
+    this.text.patch(rhs.translated);
   }
 
   toString(): string {

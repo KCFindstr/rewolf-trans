@@ -2,7 +2,15 @@
 
 Rewolf-trans is an improved Wolf RPG Editor games translation tool heavily inspired by [Wolf Trans](https://github.com/elizagamedev/wolftrans) and [Translator++](https://dreamsavior.net/translator-plusplus/).
 
-This package is written in [TypeScript](https://www.typescriptlang.org/) and can be installed as a command line tool.
+This package is written in [TypeScript](https://www.typescriptlang.org/) and can be installed as a command line tool or a NodeJS dependency.
+
+## Why Rewolf-trans
+- Supports reading / writing in custom encoding.
+- Better patch file format that uniquely identify string location, which fixes some string locating issue in Wolf Trans.
+- More strings extracted and categorized into different patch files based on how dangerous the tools thinks it is to modify these string.
+- Possible to upgrade from your existing Wolf Trans patch files.
+- Works both as a command line tool and a NodeJS package.
+- Extensible design.
 
 ## Installation
 
@@ -29,7 +37,7 @@ npx rewolf-trans --extract --root <game root directory> --patch <patch directory
 
 ### Generate Patch
 
-In addition to `--extract`, it takes in `<source directory>`. When generating patch files, the tool will try to read all existing patch files in `<source directory>` and write any changes or translations to the generated files.
+In addition to `--extract`, it takes in another parameter `<source directory>`. When generating patch files, the tool will try to read all existing patch files in `<source directory>` and write any changes or translations to the generated files.
 
 This is very helpful when you want to upgrade from exsiting Wolf Trans patch files, since this tool tries to be compatible when reading (but not writing!) the Wolf Trans patch file format. However, due to some differences in implementation, some data might fail to upgrade, which will be logged.
 
@@ -38,7 +46,7 @@ npx rewolf-trans --generate --root <game root directory> --patch <patch director
 ```
 
 ### Apply Patch
-Reads all patch files from `<patch directory>` and writes patched game data files to `<output directory>/rewt-out`.
+Reads all patch files from `<patch directory>/rewt-patch` and writes patched game data files to `<output directory>/rewt-out`.
 
 **Warning**: The output directory will be recursively removed if it exists.
 
@@ -52,15 +60,15 @@ By default, the tool reads SHIFT_JIS and writes GBK. To change this, append `--r
 ### Verbose Logging
 Add the flag `--verbose` to enable verbose logging.
 
-## Limitations
+## Other Topics
 ### Patch Format
 Although very similar, this tool uses a different patch file format than Wolf Trans does, which are incompatible with each other. See sections above if you want to upgrade Wolf Trans patch files to Reworl-trans patch files. However there's no way back.
 
 ### Translating Context
 If you translate context strings, they should be applied to game data. This is implemented but has not been tested yet.
 
-### Database Command
-One major difference is that this tool exposes Database Commands and string arguments. Although some of the Database Commands and string arguments should be translated, modifying others might break the game. If you see mixed DatabaseCommand / string argument contexts and other contexts, try manually separating them.
+### Dangerous Strings
+One major difference is that this tool exposes some dangerous strings such as Database Commands and string arguments. Although some of them should be translated, modifying others might break the game. Translation texts will be written to separate patch files according to how dangerous it is to modify these strings, but if you see mixed contexts and only want to translate some of them, try manually separating contexts into different `> BEGIN STRING` and `> END STRING` blocks.
 
 ## Disclaimer
 1. This tool might not work with all the games, and please submit an issue if it does not work / misses texts that should be translated / has weird behavior. Verbose debug logs will be helpful. But it's not ganranteed that I will have capacity to investigate the issue.

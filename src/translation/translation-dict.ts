@@ -1,112 +1,14 @@
 import * as fs from 'fs';
 import { WolfContext } from '../archive/wolf-context';
 import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
-import { ICustomKey, IString } from '../interfaces';
 import { logger } from '../logger';
 import { compareVersion, forceWriteFile, groupBy } from '../util';
 import { ContextBuilder } from './context-builder';
 import { ContextTrie } from './context-trie';
-import {
-  escapeMultiline,
-  isTranslatable,
-  unescapeMultiline,
-} from './string-utils';
+import { isTranslatable, unescapeMultiline } from './string-utils';
 import { TranslationContext } from './translation-context';
+import { EntryDangerLevel, TranslationEntry } from './translation-entry';
 import { TranslationString } from './translation-string';
-
-type LoggerType = (...args: any[]) => void;
-
-export class TranslationEntry implements ICustomKey, IString {
-  public original: string;
-  public patchFile: string;
-  public ctx: Record<string, TranslationContext> = {};
-
-  get key(): string {
-    return this.original;
-  }
-
-  get isTranslatable(): boolean {
-    return isTranslatable(this.original);
-  }
-
-  addCtx(...ctxs: TranslationContext[]) {
-    for (const ctx of ctxs) {
-      if (!ctx) {
-        continue;
-      }
-      const existing = this.ctx[ctx.key];
-      if (existing) {
-        existing.patch(ctx);
-      } else {
-        this.ctx[ctx.key] = ctx;
-      }
-    }
-  }
-
-  patchCtx(logger: LoggerType, ...ctxs: TranslationContext[]) {
-    for (const ctx of ctxs) {
-      if (!ctx) {
-        continue;
-      }
-      const existing = this.ctx[ctx.key];
-      if (!existing) {
-        logger(`Context not found: ${ctx.key}`);
-        continue;
-      }
-      existing.patch(ctx);
-    }
-  }
-
-  addEntry(rhs: TranslationEntry) {
-    if (this.original !== rhs.original) {
-      throw new Error(
-        `Cannot add translation entry:\n${this.original}\n<^^^^^ EXISTING ^^^^^ // vvvvv NEW vvvvv>\n${rhs.original}`,
-      );
-    }
-    this.setPatchFileIfEmpty(rhs.patchFile);
-    this.addCtx(...Object.values(rhs.ctx));
-  }
-
-  patchEntry(logger: LoggerType, rhs: TranslationEntry) {
-    this.setPatchFileIfEmpty(rhs.patchFile);
-    this.patchCtx(logger, ...Object.values(rhs.ctx));
-  }
-
-  setPatchFileIfEmpty(patchFile: string) {
-    if (!this.patchFile && patchFile) {
-      this.patchFile = patchFile;
-    }
-  }
-
-  toString(): string {
-    const ctxArr = Object.values(this.ctx);
-    const validTranslated = ctxArr.find((ctx) => ctx.isTranslated);
-    if (validTranslated) {
-      ctxArr
-        .filter((ctx) => !ctx.isTranslated)
-        .forEach((ctx) => ctx.str.patch(validTranslated.translated));
-    }
-    const ctxs = groupBy(ctxArr, (ctx) => ctx.translated);
-    const lines: string[] = [];
-    for (const translated in ctxs) {
-      const arr = ctxs[translated];
-      const prefix = translated ? `CONTEXT` : `CONTEXT [NEW]`;
-      arr.sort((a, b) => a.key.localeCompare(b.key));
-      lines.push(
-        '> BEGIN STRING',
-        escapeMultiline(this.original),
-        ...arr.map((ctx) => `> ${prefix} ${ctx.toString()}`),
-        escapeMultiline(translated),
-        '> END STRING',
-        '',
-      );
-    }
-    if (lines.length > 0) {
-      lines.pop();
-    }
-    return lines.join('\n');
-  }
-}
 
 enum LoadPatchFileState {
   Header = 'header',
@@ -177,70 +79,62 @@ export class TranslationDict {
     logger.debug(this.locstr(msg));
   }
 
-  public add(original: string, patchFile: string, context: TranslationContext) {
+  public add(
+    original: string,
+    level: EntryDangerLevel,
+    patchFile: string,
+    context: TranslationContext,
+  ) {
     if (!isTranslatable(original)) {
       return;
     }
-    let entry = this.entries[original];
+    const key = TranslationEntry.ParseKey(patchFile, level);
+    let entry = this.entries[key];
     if (!entry) {
       entry = new TranslationEntry();
+      entry.original = original;
+      entry.dangerLevel = level;
       this.entries[original] = entry;
     }
-    entry.original = original;
-    entry.setPatchFileIfEmpty(patchFile);
-    entry.addCtx(context);
-    this.ctxTrie.addCtx(entry, context);
+    entry.setPatchFilePrefixIfEmpty(patchFile);
+    this.ctxTrie.addCtx(context);
+    context.entry = entry;
   }
 
-  public patch(context: TranslationContext) {
-    const node = this.ctxTrie.getNode(context);
-    if (!node || !node.hasData) {
-      this.warn(`Node not found: ${context.key}`);
-      return;
-    }
-    node.entry.patchCtx(this.warn.bind(this), context);
-  }
-
-  public addTexts(ctxBuilder: ContextBuilder, texts: TranslationString[]) {
+  public addTexts(
+    ctxBuilder: ContextBuilder,
+    dangerLevel: EntryDangerLevel,
+    texts: TranslationString[],
+  ) {
     for (let i = 0; i < texts.length; i++) {
       const text = texts[i];
       ctxBuilder.enter(i);
-      this.add(text.text, ctxBuilder.patchFile, ctxBuilder.build(text));
+      this.add(
+        text.text,
+        dangerLevel,
+        ctxBuilder.patchFile,
+        ctxBuilder.build(text),
+      );
       ctxBuilder.leave(i);
     }
   }
 
-  public addEntry(entry: TranslationEntry) {
-    if (!entry.isTranslatable) {
-      return;
+  public patch(...contexts: TranslationContext[]) {
+    for (const ctx of contexts) {
+      const node = this.ctxTrie.getNode(ctx);
+      if (!node?.hasData) {
+        this.warn(`Node not found: ${ctx.key}`);
+        return;
+      }
+      node.ctx.patch(ctx);
     }
-    const existingEntry = this.entries[entry.original];
-    if (existingEntry) {
-      existingEntry.addEntry(entry);
-    } else {
-      this.entries[entry.original] = entry;
-    }
-  }
-
-  public patchEntry(entry: TranslationEntry) {
-    const contexts = Object.values(entry.ctx);
-    if (!entry.isTranslatable || contexts.length === 0) {
-      return;
-    }
-    const first = contexts[0];
-    const node = this.ctxTrie.getNode(first);
-    if (!node || !node.hasData) {
-      this.warn(`Node not found: ${first.key}`);
-      return;
-    }
-    node.entry.patchEntry(this.warn.bind(this), entry);
   }
 
   public load(patchPath: string) {
     this.filename_ = patchPath;
     const text = fs.readFileSync(patchPath, 'utf8');
     const lines = text.split('\n');
-    let entry: TranslationEntry;
+    const contexts: TranslationContext[] = [];
     const original: string[] = [];
     const translated: string[] = [];
     let state = LoadPatchFileState.Header;
@@ -293,23 +187,23 @@ export class TranslationDict {
             // Begin string
             original.splice(0);
             translated.splice(0);
-            entry = new TranslationEntry();
+            contexts.splice(0);
             if (state !== LoadPatchFileState.Blank) {
               throw new Error(`Unexpected BEGIN STRING in state ${state}`);
             }
             state = LoadPatchFileState.Oringal;
           } else if (this.parseInstruction(line, 'END STRING')[0]) {
             // End string
+            if (state !== LoadPatchFileState.Translated) {
+              throw new Error(`Unexpected END STRING in state ${state}`);
+            }
             let translatedStr = translated.join('\n');
             if (translatedStr) {
               translatedStr = unescapeMultiline(translatedStr);
-              Object.values(entry.ctx).forEach((ctx) => {
-                ctx.str = new TranslationString(translatedStr, true);
+              contexts.forEach((ctx) => {
+                ctx.text = new TranslationString(translatedStr, true);
               });
-              this.patchEntry(entry);
-            }
-            if (state !== LoadPatchFileState.Translated) {
-              throw new Error(`Unexpected END STRING in state ${state}`);
+              this.patch(...contexts);
             }
             state = LoadPatchFileState.Blank;
           } else if (([, str] = this.parseInstruction(line, 'CONTEXT'))) {
@@ -320,20 +214,22 @@ export class TranslationDict {
             ) {
               throw new Error(`Unexpected CONTEXT in state ${state}`);
             }
-            entry.original = unescapeMultiline(original.join('\n'));
             str = str.trimStart();
             const match = str.match(/^\[[^\]]*\] (.*)$/s);
             if (match) {
               str = match[1];
             }
+            let ctx: TranslationContext;
             if (format === PatchFormat.RewolfTrans) {
-              entry.addCtx(TranslationContext.FromStr(str));
+              ctx = TranslationContext.FromStr(str);
             } else if (format === PatchFormat.WolfTrans) {
-              entry.addCtx(
-                TranslationContext.FromLegacyStr(str, entry.original, this),
-              );
+              const originalStr = unescapeMultiline(original.join('\n'));
+              ctx = TranslationContext.FromLegacyStr(str, originalStr, this);
             } else {
               throw new Error('Unknown patch format while parsing CONTEXT');
+            }
+            if (ctx) {
+              contexts.push(ctx);
             }
             state = LoadPatchFileState.Context;
           } else {

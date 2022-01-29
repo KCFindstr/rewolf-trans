@@ -91,7 +91,7 @@ export class WolfMap extends WolfArchive implements ISerializable {
 
   override generatePatch(dict: TranslationDict): void {
     const pathInfo = path.parse(this.file_.filename);
-    const patchPath = path.join(pathInfo.dir, `${pathInfo.name}.txt`);
+    const patchPath = path.join(pathInfo.dir, pathInfo.name);
     const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
     const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.MPS);
     ctxBuilder.enter(pathInfo.name);

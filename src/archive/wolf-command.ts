@@ -7,6 +7,7 @@ import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
+import { EntryDangerLevel } from '../translation/translation-entry';
 
 export class WolfCommand implements ISerializable, IAppendContext {
   public readonly name: string;
@@ -24,13 +25,17 @@ export class WolfCommand implements ISerializable, IAppendContext {
     this.name = name.substring(0, name.length - 7);
   }
 
+  get dangerLevel(): EntryDangerLevel {
+    return EntryDangerLevel.Danger;
+  }
+
   serialize(stream: BufferStream): void {
     stream.appendByte(this.args.length + 1);
     stream.appendInt(this.cid);
     stream.appendIntArray(this.args, noop);
     stream.appendByte(this.indent);
-    stream.appendTStringArray(this.stringArgs, (stream, value) =>
-      stream.appendByte(value),
+    stream.appendTStringArray(this.stringArgs, (s, value) =>
+      s.appendByte(value),
     );
     this.writeTeminator(stream);
   }
@@ -46,14 +51,20 @@ export class WolfCommand implements ISerializable, IAppendContext {
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     ctxBuilder.enter(this.name);
-    dict.addTexts(ctxBuilder, this.getTexts());
+    dict.addTexts(ctxBuilder, this.dangerLevel, this.getTexts());
     ctxBuilder.leave(this.name);
   }
 }
 
-export class StringArgsCommand extends WolfCommand {
-  override getTexts() {
-    return this.stringArgs;
+export class WolfNormalCommand extends WolfCommand {
+  override get dangerLevel(): EntryDangerLevel {
+    return EntryDangerLevel.Normal;
+  }
+}
+
+export class WolfWarnCommand extends WolfCommand {
+  override get dangerLevel(): EntryDangerLevel {
+    return EntryDangerLevel.Warn;
   }
 }
 
@@ -61,25 +72,25 @@ export class BlankCommand extends WolfCommand {}
 
 export class CheckpointCommand extends WolfCommand {}
 
-export class MessageCommand extends StringArgsCommand {}
+export class MessageCommand extends WolfNormalCommand {}
 
-export class ChoicesCommand extends StringArgsCommand {}
+export class ChoicesCommand extends WolfNormalCommand {}
 
-export class CommentCommand extends StringArgsCommand {}
+export class CommentCommand extends WolfNormalCommand {}
 
 export class ForceStopMessageCommand extends WolfCommand {}
 
-export class DebugMessageCommand extends StringArgsCommand {}
+export class DebugMessageCommand extends WolfNormalCommand {}
 
 export class ClearDebugTextCommand extends WolfCommand {}
 
 export class VariableConditionCommand extends WolfCommand {}
 
-export class StringConditionCommand extends StringArgsCommand {}
+export class StringConditionCommand extends WolfNormalCommand {}
 
 export class SetVariableCommand extends WolfCommand {}
 
-export class SetStringCommand extends StringArgsCommand {}
+export class SetStringCommand extends WolfNormalCommand {}
 
 export class InputKeyCommand extends WolfCommand {}
 
@@ -95,13 +106,13 @@ export class SoundCommand extends WolfCommand {}
 
 export enum PictureCommandType {
   Invalid = -1,
-  File = 0,
+  PicFile = 0,
   FileString = 1,
-  Text = 2,
+  PicText = 2,
   WindowFile = 3,
   WindowString = 4,
 }
-export class PictureCommand extends StringArgsCommand {
+export class PictureCommand extends WolfNormalCommand {
   get type(): PictureCommandType {
     const typ = (this.args[0] >> 4) & 0x07;
     if (typ <= PictureCommandType.WindowString) {
@@ -119,7 +130,7 @@ export class PictureCommand extends StringArgsCommand {
   }
 
   override getTexts() {
-    if (this.type !== PictureCommandType.Text) {
+    if (this.type !== PictureCommandType.PicText) {
       return [];
     }
     return super.getTexts();
@@ -127,7 +138,7 @@ export class PictureCommand extends StringArgsCommand {
 
   get filename() {
     if (
-      this.type !== PictureCommandType.File &&
+      this.type !== PictureCommandType.PicFile &&
       this.type !== PictureCommandType.WindowFile
     ) {
       throw new Error(`Picture type ${this.type} does not have filename`);
@@ -137,7 +148,7 @@ export class PictureCommand extends StringArgsCommand {
 
   set filename(value: string) {
     if (
-      this.type !== PictureCommandType.File &&
+      this.type !== PictureCommandType.PicFile &&
       this.type !== PictureCommandType.WindowFile
     ) {
       throw new Error(`Picture type ${this.type} does not have filename`);
@@ -191,7 +202,7 @@ export class MoveCommand extends WolfCommand {
     super(cid, args, stringArgs, indent);
     this.unknown = file.readBytes(5);
     this.flags = file.readByte();
-    this.routes = file.readArray((file) => new RouteCommand(file));
+    this.routes = file.readArray((f) => new RouteCommand(f));
   }
 
   override writeTeminator(stream: BufferStream): void {
@@ -228,7 +239,7 @@ export class ChipSetCommand extends WolfCommand {}
 
 export class ChipOverwriteCommand extends WolfCommand {}
 
-export class DatabaseCommand extends StringArgsCommand {}
+export class DatabaseCommand extends WolfWarnCommand {}
 
 export class ImportDatabaseCommand extends WolfCommand {}
 
@@ -396,7 +407,7 @@ export function createCommand(file: FileCoder): WolfCommand {
   const cid = file.readUIntLE();
   const args = file.readUIntArray(() => argCount - 1);
   const indent = file.readByte();
-  const stringArgs = file.readTStringArray((file) => file.readByte());
+  const stringArgs = file.readTStringArray((f) => f.readByte());
   const terminator = file.readByte();
   if (terminator === WOLF_MAP.MOVE_COMMAND_TERMINATOR) {
     return new MoveCommand(cid, args, stringArgs, indent, file);
