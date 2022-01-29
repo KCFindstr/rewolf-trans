@@ -235,7 +235,7 @@ export class WolfData implements IProjectData, IAppendContext {
         ctxBuilder.enter(field.index, field.name);
         dict.add(
           value.text,
-          EntryDangerLevel.Warn,
+          EntryDangerLevel.Normal,
           ctxBuilder.patchFile,
           ctxBuilder.build(value),
         );

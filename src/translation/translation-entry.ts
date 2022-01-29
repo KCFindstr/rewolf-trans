@@ -15,8 +15,8 @@ export class TranslationEntry implements ICustomKey, IString {
   public dangerLevel: EntryDangerLevel = EntryDangerLevel.Normal;
   public ctxs: TranslationContext[] = [];
 
-  static ParseKey(patchFile: string, dangerLevel: EntryDangerLevel) {
-    return `${patchFile}/${dangerLevel}`;
+  static ParseKey(original: string, dangerLevel: EntryDangerLevel) {
+    return `${original}/${dangerLevel}`;
   }
 
   get patchFilePrefix(): string {

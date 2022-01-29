@@ -88,13 +88,13 @@ export class TranslationDict {
     if (!isTranslatable(original)) {
       return;
     }
-    const key = TranslationEntry.ParseKey(patchFile, level);
+    const key = TranslationEntry.ParseKey(original, level);
     let entry = this.entries[key];
     if (!entry) {
       entry = new TranslationEntry();
       entry.original = original;
       entry.dangerLevel = level;
-      this.entries[original] = entry;
+      this.entries[key] = entry;
     }
     entry.setPatchFilePrefixIfEmpty(patchFile);
     this.ctxTrie.addCtx(context);
