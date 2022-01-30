@@ -1,7 +1,7 @@
 {
   "name": "rewolf-trans",
   "repository": "github:KCFindstr/rewolf-trans",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Translate Wolf RPG games.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,12 +27,12 @@
   "author": "KCFindstr",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "^17.0.12",
     "iconv-lite": "^0.6.3",
     "string-similarity": "^4.0.4",
     "yargs": "^17.3.1"
   },
   "devDependencies": {
+    "@types/node": "^17.0.12",
     "@types/inquirer": "^7.3.3",
     "@types/string-similarity": "^4.0.0",
     "@types/yargs": "^17.0.8",
