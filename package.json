@@ -4,8 +4,10 @@
   "description": "Translate Wolf RPG games.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "bin": "dist/index.js",
+  "bin": "dist/cli.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "node ./dist/index.js",
     "dev": "ts-node index.ts",
