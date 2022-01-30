@@ -1,6 +1,7 @@
 {
   "name": "rewolf-trans",
-  "version": "0.1.1",
+  "repository": "github:KCFindstr/rewolf-trans",
+  "version": "0.1.2",
   "description": "Translate Wolf RPG games.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
