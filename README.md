@@ -8,7 +8,7 @@ This package is written in [TypeScript](https://www.typescriptlang.org/) and can
 - Supports reading / writing in custom encoding.
 - Better patch file format that uniquely identify string location, which fixes some string locating issue in Wolf Trans.
 - More strings extracted and categorized into different patch files based on how dangerous the tools thinks it is to modify these string.
-- Possible to upgrade from your existing Wolf Trans patch files.
+- Possible to upgrade from existing Wolf Trans patch files.
 - Works both as a command line tool and a NodeJS package.
 - Extensible design.
 
