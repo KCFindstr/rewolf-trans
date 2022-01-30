@@ -4,9 +4,6 @@ export class TranslationString {
   constructor(public text: string, public isTranslated: boolean = false) {}
 
   patch(translated: string) {
-    if (translated === '店员') {
-      console.log('here');
-    }
     this.text = translated;
     this.isTranslated = true;
   }
