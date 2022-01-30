@@ -1,6 +1,6 @@
 {
   "name": "rewolf-trans",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Translate Wolf RPG games.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
     "cli"
   ],
   "author": "KCFindstr",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "dependencies": {
     "@types/node": "^17.0.12",
     "iconv-lite": "^0.6.3",
