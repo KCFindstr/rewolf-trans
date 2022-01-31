@@ -81,7 +81,7 @@ async function main() {
       apply(options.root, options.patch, options.output);
     } else {
       logger.error(
-        'At least one of --extract, --patch, or --apply must be specified.',
+        'At least one of --extract, --generate, or --apply must be specified.',
       );
     }
   } catch (e) {

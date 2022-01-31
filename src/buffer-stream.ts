@@ -41,7 +41,7 @@ export class BufferStream {
   appendString(str: string, translated = false) {
     const buffer = iconv.encode(
       str,
-      translated ? WolfContext.writeEncoding : 'Shift_JIS',
+      translated ? WolfContext.writeEncoding : WolfContext.readEncoding,
     );
     this.appendInt(buffer.length + 1);
     this.appendBuffer(buffer);
