@@ -5,7 +5,7 @@ import { ISerializable } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
 import { TranslationDict } from '../translation/translation-dict';
-import { addLeadingChar, forceWriteFile } from '../util';
+import { addLeadingChar, bufferStartsWith, forceWriteFile } from '../util';
 import { PathResolver } from './path-resolver';
 import { WolfArchive } from './wolf-archive';
 import { WolfCommonEvent } from './wolf-common-event';
@@ -13,6 +13,22 @@ import { WolfContext } from './wolf-context';
 
 export class WolfCE extends WolfArchive implements ISerializable {
   events_: WolfCommonEvent[];
+  isValid_ = false;
+
+  constructor(filename: string) {
+    super(filename);
+    if (!super.isValid) {
+      return;
+    }
+    if (!bufferStartsWith(this.file_.buffer, WOLF_CE.HEADER)) {
+      return;
+    }
+    this.isValid_ = true;
+  }
+
+  override get isValid() {
+    return this.isValid_;
+  }
 
   serialize(stream: BufferStream): void {
     stream.appendBuffer(WOLF_CE.HEADER);

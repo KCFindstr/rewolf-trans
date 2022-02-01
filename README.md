@@ -7,7 +7,7 @@ This package is written in [TypeScript](https://www.typescriptlang.org/) and can
 ## Why Rewolf-trans
 - Supports reading / writing in custom encoding.
 - Better patch file format that uniquely identify string location, which fixes some string locating issue in Wolf Trans.
-- More strings extracted and categorized into different patch files based on how dangerous the tools thinks it is to modify these string.
+- More strings extracted and categorized into different patch files based on how risky the tools thinks it is to modify these string.
 - Possible to upgrade from existing Wolf Trans patch files.
 - Works both as a command line tool and a NodeJS package.
 - Extensible design.
@@ -68,7 +68,7 @@ Although very similar, this tool uses a different patch file format than Wolf Tr
 If you translate context strings, they should be applied to game data. This is implemented but has not been tested yet.
 
 ### Dangerous Strings
-One major difference is that this tool exposes some dangerous strings such as Database Commands and string arguments. Although some of them should be translated, modifying others might break the game. Translation texts will be written to separate patch files according to how dangerous it is to modify these strings, but if you see mixed contexts and only want to translate some of them, try manually separating contexts into different `> BEGIN STRING` and `> END STRING` blocks.
+One major difference is that this tool exposes some dangerous strings such as Database Commands and string arguments. Although some of them should be translated, modifying others might break the game. Translation texts will be written to separate patch files according to how risky it is to modify these strings, but if you see mixed contexts and only want to translate some of them, try manually separating contexts into different `> BEGIN STRING` and `> END STRING` blocks.
 
 ## Disclaimer
 1. This tool might not work with all the games, and please submit an issue if it does not work / misses texts that should be translated / has weird behavior. Verbose debug logs will be helpful. But it's not ganranteed that I will have capacity to investigate the issue.
