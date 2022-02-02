@@ -56,6 +56,12 @@ export class WolfCommand implements ISerializable, IAppendContext {
   }
 }
 
+export class WolfExtraCommand extends WolfCommand {
+  override get dangerLevel(): EntryDangerLevel {
+    return EntryDangerLevel.Extra;
+  }
+}
+
 export class WolfNormalCommand extends WolfCommand {
   override get dangerLevel(): EntryDangerLevel {
     return EntryDangerLevel.Normal;
@@ -76,11 +82,11 @@ export class MessageCommand extends WolfNormalCommand {}
 
 export class ChoicesCommand extends WolfNormalCommand {}
 
-export class CommentCommand extends WolfNormalCommand {}
+export class CommentCommand extends WolfExtraCommand {}
 
 export class ForceStopMessageCommand extends WolfCommand {}
 
-export class DebugMessageCommand extends WolfNormalCommand {}
+export class DebugMessageCommand extends WolfExtraCommand {}
 
 export class ClearDebugTextCommand extends WolfCommand {}
 

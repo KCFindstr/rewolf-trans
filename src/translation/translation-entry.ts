@@ -4,6 +4,7 @@ import { isTranslatable, escapeMultiline } from './string-utils';
 import { TranslationContext } from './translation-context';
 
 export enum EntryDangerLevel {
+  Extra = 'Extra',
   Normal = 'Normal',
   Warn = 'Warn',
   Danger = 'Danger',
