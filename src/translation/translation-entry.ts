@@ -70,12 +70,14 @@ export class TranslationEntry implements ICustomKey, IString {
     const lines: string[] = [];
     for (const translated in ctxs) {
       const arr = ctxs[translated];
-      const prefix = translated ? `CONTEXT` : `CONTEXT [NEW]`;
       arr.sort((a, b) => a.key.localeCompare(b.key));
       lines.push(
         '> BEGIN STRING',
         escapeMultiline(this.original),
-        ...arr.map((ctx) => `> ${prefix} ${ctx.toString()}`),
+        ...arr.map((ctx) => {
+          const prefix = ctx.isNew ? `CONTEXT [NEW]` : `CONTEXT`;
+          return `> ${prefix} ${ctx.toString()}`;
+        }),
         escapeMultiline(translated),
         '> END STRING',
         '',

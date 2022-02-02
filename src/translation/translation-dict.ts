@@ -203,8 +203,8 @@ export class TranslationDict {
               contexts.forEach((ctx) => {
                 ctx.text = new TranslationString(translatedStr, true);
               });
-              this.patch(...contexts);
             }
+            this.patch(...contexts);
             state = LoadPatchFileState.Blank;
           } else if (([, str] = this.parseInstruction(line, 'CONTEXT'))) {
             // Load context
@@ -213,11 +213,6 @@ export class TranslationDict {
               state !== LoadPatchFileState.Context
             ) {
               throw new Error(`Unexpected CONTEXT in state ${state}`);
-            }
-            str = str.trimStart();
-            const match = str.match(/^\[[^\]]*\] (.*)$/s);
-            if (match) {
-              str = match[1];
             }
             let ctx: TranslationContext;
             if (format === PatchFormat.RewolfTrans) {

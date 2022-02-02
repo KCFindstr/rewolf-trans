@@ -46,12 +46,21 @@ export class TranslationContext implements ICustomKey, IString {
     public text: TranslationString,
     paths: ContextPathPart[] = [],
     entry?: TranslationEntry,
+    public isNew: boolean = true,
   ) {
     this.paths = paths;
     this.entry = entry;
   }
 
   static FromStr(str: string): TranslationContext {
+    str = str.trimStart();
+    const match = str.match(/^\[([^\]]*)\] (.*)$/s);
+    let isNew = false;
+    if (match) {
+      const params = match[1].split(',');
+      isNew = params.includes('NEW');
+      str = match[2];
+    }
     const colonIndex = str.indexOf(':');
     if (colonIndex < 0) {
       throw new Error(`Invalid context string: ${str}`);
@@ -62,6 +71,8 @@ export class TranslationContext implements ICustomKey, IString {
       type,
       undefined,
       paths.map((path) => ContextPathPart.FromString(path)),
+      undefined,
+      isNew,
     );
   }
 
@@ -176,6 +187,7 @@ export class TranslationContext implements ICustomKey, IString {
         `Cannot patch translation entry:\n${this.key}\n<==========>\n${rhs.key}`,
       );
     }
+    this.isNew = rhs.isNew;
     if (!rhs.isTranslated) {
       return;
     }
