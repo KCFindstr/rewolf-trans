@@ -204,14 +204,6 @@ export class TranslationContext implements ICustomKey, IString {
       logger.debug(`Patching empty translation context ${this.key}`);
       return;
     }
-    for (let i = 0; i < this.paths.length; i++) {
-      if (
-        this.paths[i].name &&
-        this.paths[i].name.text !== rhs.paths[i].name.text
-      ) {
-        this.paths[i].name.patch(rhs.paths[i].name.text);
-      }
-    }
     this.text.patch(rhs.translated);
   }
 

@@ -84,9 +84,9 @@ export class TranslationDict {
     level: EntryDangerLevel,
     patchFile: string,
     context: TranslationContext,
-  ) {
+  ): boolean {
     if (!isTranslatable(original)) {
-      return;
+      return false;
     }
     const key = TranslationEntry.ParseKey(original, level);
     let entry = this.entries[key];
@@ -99,6 +99,7 @@ export class TranslationDict {
     entry.setPatchFilePrefixIfEmpty(patchFile);
     this.ctxTrie.addCtx(context);
     context.entry = entry;
+    return true;
   }
 
   public addTexts(

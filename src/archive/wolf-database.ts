@@ -102,7 +102,7 @@ export class WolfDatabase extends WolfArchive implements IProjectData {
     ctxBuilder.enter(pathInfo.name);
     for (let i = 0; i < this.types_.length; i++) {
       const type = this.types_[i];
-      ctxBuilder.enter(i, type.name);
+      ctxBuilder.enter(i, type.name.text);
       ctxBuilder.patchFile = path.join(
         relativeFile,
         escapePath(type.name.text),

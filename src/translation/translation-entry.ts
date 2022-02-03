@@ -6,6 +6,7 @@ import { TranslationContext } from './translation-context';
 export enum EntryDangerLevel {
   Extra = 'Extra',
   Normal = 'Normal',
+  Context = 'Context',
   Warn = 'Warn',
   Danger = 'Danger',
 }

@@ -1,5 +1,5 @@
 import { BufferStream } from '../buffer-stream';
-import { WOLF_DAT } from '../constants';
+import { CONTEXT_SUFFIX, WOLF_DAT } from '../constants';
 import { FileCoder } from './file-coder';
 import { IAppendContext, IProjectData } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
@@ -58,9 +58,18 @@ export class WolfType implements IProjectData, IAppendContext {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(CONTEXT_SUFFIX);
+    dict.add(
+      this.name.text,
+      EntryDangerLevel.Context,
+      ctxBuilder.patchFile,
+      ctxBuilder.build(this.name),
+    );
+    ctxBuilder.leave(CONTEXT_SUFFIX);
+
     for (let i = 0; i < this.data.length; i++) {
       const datum = this.data[i];
-      ctxBuilder.enter(i, datum.name);
+      ctxBuilder.enter(i, datum.name.text);
       datum.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
     }
@@ -225,6 +234,15 @@ export class WolfData implements IProjectData, IAppendContext {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    ctxBuilder.enter(CONTEXT_SUFFIX);
+    dict.add(
+      this.name.text,
+      EntryDangerLevel.Context,
+      ctxBuilder.patchFile,
+      ctxBuilder.build(this.name),
+    );
+    ctxBuilder.leave(CONTEXT_SUFFIX);
+
     this.fields
       .filter((field) => field.isTranslatable)
       .forEach((field) => {
@@ -232,7 +250,17 @@ export class WolfData implements IProjectData, IAppendContext {
         if (!(value instanceof TranslationString)) {
           throw new Error(`WolfType: Invalid value to translate: ${value}`);
         }
-        ctxBuilder.enter(field.index, field.name);
+        ctxBuilder.enter(field.index, field.name.text);
+
+        ctxBuilder.enter(CONTEXT_SUFFIX);
+        dict.add(
+          field.name.text,
+          EntryDangerLevel.Context,
+          ctxBuilder.patchFile,
+          ctxBuilder.build(field.name),
+        );
+        ctxBuilder.leave(CONTEXT_SUFFIX);
+
         dict.add(
           value.text,
           EntryDangerLevel.Normal,

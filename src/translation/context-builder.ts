@@ -4,13 +4,13 @@ import { TranslationString } from './translation-string';
 
 export class ContextPathPart implements IString {
   public index: string;
-  constructor(index: IString, public name?: TranslationString) {
+  constructor(index: IString, public name?: string) {
     this.index = index.toString();
   }
 
   toString(): string {
     if (this.name !== undefined) {
-      return `[${this.index}]${this.name.text}`;
+      return `[${this.index}]${this.name}`;
     }
     return this.index;
   }
@@ -23,15 +23,12 @@ export class ContextPathPart implements IString {
     this.index = value.toString();
   }
 
-  static FromString(str: string, translated = true): ContextPathPart {
+  static FromString(str: string): ContextPathPart {
     const match = str.match(/^\[(\d+)\](.*)$/s);
     if (!match) {
       return new ContextPathPart(str);
     }
-    return new ContextPathPart(
-      match[1],
-      new TranslationString(match[2], translated),
-    );
+    return new ContextPathPart(match[1], match[2]);
   }
 }
 
@@ -44,7 +41,7 @@ export class ContextBuilder {
    */
   constructor(public patchFile: string, public type: string) {}
 
-  enter(ctx: string | number, name?: TranslationString) {
+  enter(ctx: string | number, name?: string) {
     this.ctxArr.push(new ContextPathPart(ctx.toString(), name));
   }
 
