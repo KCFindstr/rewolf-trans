@@ -65,7 +65,7 @@ Add the flag `--verbose` to enable verbose logging.
 Although very similar, this tool uses a different patch file format than Wolf Trans does, which are incompatible with each other. See sections above if you want to upgrade Wolf Trans patch files to Reworl-trans patch files. However there's no way back.
 
 ### Translating Context
-If you translate context strings, they should be applied to game data. This is implemented but has not been tested yet.
+**Breaking Change in 0.1.5**: Do not modify strings in `> CONTEXT` lines directly. Instead, look for a patch file with suffix `_Context.txt`. All context strings are stored there, where you can translate as if they are regular texts.
 
 ### Dangerous Strings
 One major difference is that this tool exposes some dangerous strings such as Database Commands and string arguments. Although some of them should be translated, modifying others might break the game. Translation texts will be written to separate patch files according to how risky it is to modify these strings, but if you see mixed contexts and only want to translate some of them, try manually separating contexts into different `> BEGIN STRING` and `> END STRING` blocks.
