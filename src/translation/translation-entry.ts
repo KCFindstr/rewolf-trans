@@ -3,7 +3,7 @@ import { groupBy } from '../util';
 import { isTranslatable, escapeMultiline } from './string-utils';
 import { TranslationContext } from './translation-context';
 
-export enum EntryDangerLevel {
+export enum PatchFileCategory {
   Extra = 'Extra',
   Normal = 'Normal',
   Context = 'Context',
@@ -14,11 +14,11 @@ export enum EntryDangerLevel {
 export class TranslationEntry implements ICustomKey, IString {
   protected patchFilePrefix_: string;
   public original: string;
-  public dangerLevel: EntryDangerLevel = EntryDangerLevel.Normal;
+  public category: PatchFileCategory = PatchFileCategory.Normal;
   public ctxs: TranslationContext[] = [];
 
-  static ParseKey(original: string, dangerLevel: EntryDangerLevel) {
-    return `${original}/${dangerLevel}`;
+  static ParseKey(original: string, category: PatchFileCategory) {
+    return `${original}/${category}`;
   }
 
   get patchFilePrefix(): string {
@@ -30,14 +30,14 @@ export class TranslationEntry implements ICustomKey, IString {
   }
 
   get patchFile(): string {
-    if (this.dangerLevel === EntryDangerLevel.Normal) {
+    if (this.category === PatchFileCategory.Normal) {
       return `${this.patchFilePrefix_}.txt`;
     }
-    return `${this.patchFilePrefix_}_${this.dangerLevel}.txt`;
+    return `${this.patchFilePrefix_}_${this.category}.txt`;
   }
 
   get key(): string {
-    return TranslationEntry.ParseKey(this.patchFilePrefix_, this.dangerLevel);
+    return TranslationEntry.ParseKey(this.patchFilePrefix_, this.category);
   }
 
   get isTranslatable(): boolean {

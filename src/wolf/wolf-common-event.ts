@@ -7,7 +7,7 @@ import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { TranslationString } from '../translation/translation-string';
 import { noop } from '../util';
-import { EntryDangerLevel } from '../translation/translation-entry';
+import { PatchFileCategory } from '../translation/translation-entry';
 
 export class WolfCommonEvent implements ISerializable, IAppendContext {
   id: number;
@@ -103,19 +103,19 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
     ctxBuilder.leave('cmd');
 
     ctxBuilder.enter('strarg');
-    dict.addTexts(ctxBuilder, EntryDangerLevel.Danger, this.strArgs);
+    dict.addTexts(ctxBuilder, PatchFileCategory.Danger, this.strArgs);
     ctxBuilder.leave('strarg');
 
     ctxBuilder.enter('optarg');
     for (let i = 0; i < this.spOptionArgs.length; i++) {
       ctxBuilder.enter(i);
-      dict.addTexts(ctxBuilder, EntryDangerLevel.Danger, this.spOptionArgs[i]);
+      dict.addTexts(ctxBuilder, PatchFileCategory.Danger, this.spOptionArgs[i]);
       ctxBuilder.leave(i);
     }
     ctxBuilder.leave('optarg');
 
     ctxBuilder.enter('cself');
-    dict.addTexts(ctxBuilder, EntryDangerLevel.Danger, this.cSelf);
+    dict.addTexts(ctxBuilder, PatchFileCategory.Danger, this.cSelf);
     ctxBuilder.leave('cself');
   }
 }

@@ -1,12 +1,13 @@
 import { BufferStream } from '../archive/buffer-stream';
-import { CONTEXT_SUFFIX, WOLF_DAT } from './constants';
+import { WOLF_DAT } from './constants';
 import { FileCoder } from '../archive/file-coder';
 import { IAppendContext, IProjectData } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
-import { EntryDangerLevel } from '../translation/translation-entry';
+import { PatchFileCategory } from '../translation/translation-entry';
+import { CONTEXT_SUFFIX } from '../constants';
 
 export class WolfType implements IProjectData, IAppendContext {
   name: TranslationString;
@@ -61,7 +62,7 @@ export class WolfType implements IProjectData, IAppendContext {
     ctxBuilder.enter(CONTEXT_SUFFIX);
     dict.add(
       this.name.text,
-      EntryDangerLevel.Context,
+      PatchFileCategory.Context,
       ctxBuilder.patchFile,
       ctxBuilder.build(this.name),
     );
@@ -167,7 +168,7 @@ export class WolfField implements IProjectData, IAppendContext {
   }
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    dict.addTexts(ctxBuilder, EntryDangerLevel.Warn, this.stringArgs);
+    dict.addTexts(ctxBuilder, PatchFileCategory.Warn, this.stringArgs);
   }
 }
 
@@ -237,7 +238,7 @@ export class WolfData implements IProjectData, IAppendContext {
     ctxBuilder.enter(CONTEXT_SUFFIX);
     dict.add(
       this.name.text,
-      EntryDangerLevel.Context,
+      PatchFileCategory.Context,
       ctxBuilder.patchFile,
       ctxBuilder.build(this.name),
     );
@@ -255,7 +256,7 @@ export class WolfData implements IProjectData, IAppendContext {
         ctxBuilder.enter(CONTEXT_SUFFIX);
         dict.add(
           field.name.text,
-          EntryDangerLevel.Context,
+          PatchFileCategory.Context,
           ctxBuilder.patchFile,
           ctxBuilder.build(field.name),
         );
@@ -263,7 +264,7 @@ export class WolfData implements IProjectData, IAppendContext {
 
         dict.add(
           value.text,
-          EntryDangerLevel.Normal,
+          PatchFileCategory.Normal,
           ctxBuilder.patchFile,
           ctxBuilder.build(value),
         );

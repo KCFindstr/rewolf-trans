@@ -7,8 +7,9 @@ import { ContextBuilder } from './context-builder';
 import { ContextTrie } from './context-trie';
 import { isTranslatable, unescapeMultiline } from './string-utils';
 import { TranslationContext } from './translation-context';
-import { EntryDangerLevel, TranslationEntry } from './translation-entry';
+import { PatchFileCategory, TranslationEntry } from './translation-entry';
 import { TranslationString } from './translation-string';
+import { ReadWolftransContext } from '../wolf/read-wolftrans-context';
 
 enum LoadPatchFileState {
   Header = 'header',
@@ -81,7 +82,7 @@ export class TranslationDict {
 
   public add(
     original: string,
-    level: EntryDangerLevel,
+    level: PatchFileCategory,
     patchFile: string,
     context: TranslationContext,
   ): boolean {
@@ -93,7 +94,7 @@ export class TranslationDict {
     if (!entry) {
       entry = new TranslationEntry();
       entry.original = original;
-      entry.dangerLevel = level;
+      entry.category = level;
       this.entries[key] = entry;
     }
     entry.setPatchFilePrefixIfEmpty(patchFile);
@@ -104,7 +105,7 @@ export class TranslationDict {
 
   public addTexts(
     ctxBuilder: ContextBuilder,
-    dangerLevel: EntryDangerLevel,
+    category: PatchFileCategory,
     texts: TranslationString[],
   ) {
     for (let i = 0; i < texts.length; i++) {
@@ -112,7 +113,7 @@ export class TranslationDict {
       ctxBuilder.enter(i);
       this.add(
         text.text,
-        dangerLevel,
+        category,
         ctxBuilder.patchFile,
         ctxBuilder.build(text),
       );
@@ -220,7 +221,7 @@ export class TranslationDict {
               ctx = TranslationContext.FromStr(str);
             } else if (format === PatchFormat.WolfTrans) {
               const originalStr = unescapeMultiline(original.join('\n'));
-              ctx = TranslationContext.FromLegacyStr(str, originalStr, this);
+              ctx = ReadWolftransContext(str, originalStr, this);
             } else {
               throw new Error('Unknown patch format while parsing CONTEXT');
             }

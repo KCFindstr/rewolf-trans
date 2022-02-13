@@ -7,7 +7,7 @@ import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { noop } from '../util';
 import { TranslationString } from '../translation/translation-string';
-import { EntryDangerLevel } from '../translation/translation-entry';
+import { PatchFileCategory } from '../translation/translation-entry';
 
 export class WolfCommand implements ISerializable, IAppendContext {
   public readonly name: string;
@@ -25,8 +25,8 @@ export class WolfCommand implements ISerializable, IAppendContext {
     this.name = name.substring(0, name.length - 7);
   }
 
-  get dangerLevel(): EntryDangerLevel {
-    return EntryDangerLevel.Danger;
+  get category(): PatchFileCategory {
+    return PatchFileCategory.Danger;
   }
 
   serialize(stream: BufferStream): void {
@@ -51,26 +51,26 @@ export class WolfCommand implements ISerializable, IAppendContext {
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     ctxBuilder.enter(this.name);
-    dict.addTexts(ctxBuilder, this.dangerLevel, this.getTexts());
+    dict.addTexts(ctxBuilder, this.category, this.getTexts());
     ctxBuilder.leave(this.name);
   }
 }
 
 export class WolfExtraCommand extends WolfCommand {
-  override get dangerLevel(): EntryDangerLevel {
-    return EntryDangerLevel.Extra;
+  override get category(): PatchFileCategory {
+    return PatchFileCategory.Extra;
   }
 }
 
 export class WolfNormalCommand extends WolfCommand {
-  override get dangerLevel(): EntryDangerLevel {
-    return EntryDangerLevel.Normal;
+  override get category(): PatchFileCategory {
+    return PatchFileCategory.Normal;
   }
 }
 
 export class WolfWarnCommand extends WolfCommand {
-  override get dangerLevel(): EntryDangerLevel {
-    return EntryDangerLevel.Warn;
+  override get category(): PatchFileCategory {
+    return PatchFileCategory.Warn;
   }
 }
 
