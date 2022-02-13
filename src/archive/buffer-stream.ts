@@ -1,7 +1,7 @@
 import * as iconv from 'iconv-lite';
-import { WolfContext } from './wolf/wolf-context';
-import { ISerializable } from './interfaces';
-import { TranslationString } from './translation/translation-string';
+import { WolfContext } from '../wolf/wolf-context';
+import { ISerializable } from '../interfaces';
+import { TranslationString } from '../translation/translation-string';
 
 export type AppendValueFn = (stream: BufferStream, value: number) => void;
 const DefaultAppendValueFn = (stream: BufferStream, value: number) =>

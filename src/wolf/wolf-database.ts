@@ -1,8 +1,8 @@
 import * as path from 'path';
-import { BufferStream } from '../buffer-stream';
+import { BufferStream } from '../archive/buffer-stream';
 import { CTX, WOLF_DAT } from '../constants';
 import { forceWriteFile } from '../util';
-import { FileCoder } from './file-coder';
+import { FileCoder } from '../archive/file-coder';
 import { IProjectData } from '../interfaces';
 import { WolfArchive } from './wolf-archive';
 import { WolfType } from './wolf-type';

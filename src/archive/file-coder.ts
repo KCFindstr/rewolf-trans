@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
 import { logger } from '../logger';
 import { TranslationString } from '../translation/translation-string';
-import { Crypko } from './crypko';
-import { WolfContext } from './wolf-context';
+import { Crypko } from '../wolf/crypko';
+import { WolfContext } from '../wolf/wolf-context';
 
 export type ReadValueFn = (file: FileCoder) => number;
 

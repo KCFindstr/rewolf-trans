@@ -1,5 +1,5 @@
-import { BufferStream } from './buffer-stream';
-import { FileCoder } from './wolf/file-coder';
+import { BufferStream } from './archive/buffer-stream';
+import { FileCoder } from './archive/file-coder';
 import { TranslationDict } from './translation/translation-dict';
 import { ContextBuilder } from './translation/context-builder';
 import { PathResolver } from './wolf/path-resolver';

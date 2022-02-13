@@ -1,6 +1,6 @@
-import { BufferStream } from '../buffer-stream';
+import { BufferStream } from '../archive/buffer-stream';
 import { CONTEXT_SUFFIX, WOLF_DAT } from '../constants';
-import { FileCoder } from './file-coder';
+import { FileCoder } from '../archive/file-coder';
 import { IAppendContext, IProjectData } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';

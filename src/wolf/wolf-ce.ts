@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { BufferStream } from '../buffer-stream';
+import { BufferStream } from '../archive/buffer-stream';
 import { CTX, WOLF_CE } from '../constants';
 import { ISerializable } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';

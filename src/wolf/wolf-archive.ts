@@ -1,6 +1,6 @@
 import { IGeneratePatch, IWriteData } from '../interfaces';
 import { TranslationDict } from '../translation/translation-dict';
-import { FileCoder } from './file-coder';
+import { FileCoder } from '../archive/file-coder';
 import { PathResolver } from './path-resolver';
 
 export abstract class WolfArchive implements IGeneratePatch, IWriteData {
