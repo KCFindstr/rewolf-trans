@@ -60,11 +60,11 @@ export function ReadWolftransContext(
     const newPaths = ret.paths;
     const eventId = paths[0].index;
     const cmdIndex = paths[1].numIndex - 1;
-    const commandName = paths[2].index;
+    // const commandName = paths[2].index;
     newPaths.push(new ContextPathPart(eventId));
     newPaths.push(new ContextPathPart('cmd'));
     newPaths.push(new ContextPathPart(cmdIndex));
-    newPaths.push(new ContextPathPart(commandName));
+    // newPaths.push(new ContextPathPart(commandName));
   } else if (ctx.type === CTX.STR.MPS) {
     if (paths.length !== 7) {
       throw new Error(`Invalid MPS context: ${paths}`);
@@ -76,7 +76,7 @@ export function ReadWolftransContext(
     const pagesStr = paths[3].index;
     const pageNum = paths[4].numIndex - 1;
     const cmdIndex = paths[5].numIndex - 1;
-    const commandName = paths[6].index;
+    // const commandName = paths[6].index;
     if (eventsStr !== 'events' || pagesStr !== 'pages') {
       throw new Error(`Invalid element in MPS context: ${paths}`);
     }
@@ -84,7 +84,7 @@ export function ReadWolftransContext(
     newPaths.push(new ContextPathPart(eventNum));
     newPaths.push(new ContextPathPart(pageNum));
     newPaths.push(new ContextPathPart(cmdIndex));
-    newPaths.push(new ContextPathPart(commandName));
+    // newPaths.push(new ContextPathPart(commandName));
   } else {
     throw new Error(`Cannot parse legacy context type: ${ctx.type}`);
   }

@@ -50,9 +50,7 @@ export class WolfCommand implements ISerializable, IAppendContext {
 
   // For map events
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
-    ctxBuilder.enter(this.name);
     dict.addTexts(ctxBuilder, this.category, this.getTexts());
-    ctxBuilder.leave(this.name);
   }
 }
 
@@ -281,6 +279,7 @@ type WolfCommandType = {
 };
 
 export const NAME_TO_CLASS: Record<string, WolfCommandType> = {
+  Wolf: WolfCommand,
   Blank: BlankCommand,
   Checkpoint: CheckpointCommand,
   Message: MessageCommand,

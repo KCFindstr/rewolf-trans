@@ -4,6 +4,10 @@ import { safeJoin, safeSplit } from './string-utils';
 import { TranslationString } from './translation-string';
 import { logger } from '../logger';
 import { TranslationEntry } from './translation-entry';
+import { NAME_TO_CLASS } from '../wolf/wolf-command';
+
+// TODO: Remove
+let warnCommandContextUpdate = false;
 
 export class TranslationContext implements ICustomKey, IString {
   protected entry_: TranslationEntry;
@@ -50,6 +54,21 @@ export class TranslationContext implements ICustomKey, IString {
 
   set paths(value: ContextPathPart[]) {
     this.paths_ = [...value];
+    for (let i = 0; i < this.paths_.length; i++) {
+      const part = this.paths_[i];
+      // TODO: Remove this after some updates
+      if (NAME_TO_CLASS[part.index]) {
+        if (!warnCommandContextUpdate) {
+          logger.warn(
+            `Command name as context index is deprecated. Please regenerate your patch to upgrade. This backward compatibility might get removed in some future version.`,
+          );
+          warnCommandContextUpdate = true;
+        }
+        this.paths[i - 1].name = part.index;
+        this.paths_.splice(i, 1);
+        i--;
+      }
+    }
   }
 
   get entry(): TranslationEntry {

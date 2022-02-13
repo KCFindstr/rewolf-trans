@@ -115,7 +115,7 @@ export class WolfEventPage implements ISerializable, IAppendContext {
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     for (let i = 0; i < this.commands.length; i++) {
       const cmd = this.commands[i];
-      ctxBuilder.enter(i);
+      ctxBuilder.enter(i, cmd.name);
       cmd.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
     }
