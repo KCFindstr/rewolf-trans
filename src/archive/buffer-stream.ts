@@ -1,7 +1,7 @@
 import * as iconv from 'iconv-lite';
-import { WolfContext } from '../operation/wolf-context';
 import { ISerializable } from '../interfaces';
 import { TranslationString } from '../translation/translation-string';
+import { GlobalOptions } from '../operation/options';
 
 export type AppendValueFn = (stream: BufferStream, value: number) => void;
 const DefaultAppendValueFn = (stream: BufferStream, value: number) =>
@@ -38,7 +38,7 @@ export class BufferStream {
     }
   }
 
-  appendString(str: string, encoding = WolfContext.writeEncoding) {
+  appendString(str: string, encoding = GlobalOptions.writeEncoding) {
     const buffer = iconv.encode(str, encoding);
     this.appendInt(buffer.length + 1);
     this.appendBuffer(buffer);
@@ -48,7 +48,9 @@ export class BufferStream {
   appendTString(str: TranslationString) {
     this.appendString(
       str.text,
-      str.isTranslated ? WolfContext.writeEncoding : WolfContext.readEncoding,
+      str.isTranslated
+        ? GlobalOptions.writeEncoding
+        : GlobalOptions.readEncoding,
     );
   }
 

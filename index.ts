@@ -1,4 +1,4 @@
-import { extract } from './src/operation/extract';
+import { generate } from './src/operation/generate';
 import { apply } from './src/operation/apply';
 
-export { extract, apply };
+export { generate as extract, apply };

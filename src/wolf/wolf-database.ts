@@ -7,10 +7,10 @@ import { IProjectData } from '../interfaces';
 import { RewtArchive } from '../archive/rewt-archive';
 import { WolfType } from './wolf-type';
 import { TranslationDict } from '../translation/translation-dict';
-import { WolfContext } from '../operation/wolf-context';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
 import { PathResolver } from '../operation/path-resolver';
+import { GlobalOptions } from '../operation/options';
 
 export class WolfDatabase extends RewtArchive implements IProjectData {
   protected project_: FileCoder;
@@ -97,7 +97,7 @@ export class WolfDatabase extends RewtArchive implements IProjectData {
   override generatePatch(dict: TranslationDict): void {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
-    const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
+    const relativeFile = GlobalOptions.pathResolver.relativePath(patchPath);
     const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.DB);
     ctxBuilder.enter(pathInfo.name);
     for (let i = 0; i < this.types_.length; i++) {

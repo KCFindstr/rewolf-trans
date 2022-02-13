@@ -6,9 +6,9 @@ import { ISerializable } from '../interfaces';
 import { RewtArchive } from '../archive/rewt-archive';
 import { WolfEvent } from './wolf-events';
 import { TranslationDict } from '../translation/translation-dict';
-import { WolfContext } from '../operation/wolf-context';
 import { ContextBuilder } from '../translation/context-builder';
 import { PathResolver } from '../operation/path-resolver';
+import { GlobalOptions } from '../operation/options';
 
 export enum WolfArchiveType {
   Invalid,
@@ -92,7 +92,7 @@ export class WolfMap extends RewtArchive implements ISerializable {
   override generatePatch(dict: TranslationDict): void {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
-    const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
+    const relativeFile = GlobalOptions.pathResolver.relativePath(patchPath);
     const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.MPS);
     ctxBuilder.enter(pathInfo.name);
     for (const event of this.events_) {

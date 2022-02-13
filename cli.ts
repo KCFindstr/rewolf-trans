@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { extract } from './src/operation/extract';
+import { generate } from './src/operation/generate';
 import yargs from 'yargs';
-import { WolfContext } from './src/operation/wolf-context';
 import { apply } from './src/operation/apply';
 import { logger, LogLevel } from './src/logger';
+import { RewtOptions } from './src/operation/options';
 
 async function main() {
-  const options = await yargs(process.argv.slice(2))
+  const args = await yargs(process.argv.slice(2))
     .usage('Extract strings from WolfRPG games and patch data.')
     .options({
       extract: {
@@ -68,17 +68,29 @@ async function main() {
     })
     .parse();
   try {
-    WolfContext.readEncoding = options.renc;
-    WolfContext.writeEncoding = options.wenc;
-    if (options.verbose) {
+    const options: RewtOptions = {
+      game: 'wolf',
+      gameDir: args.root,
+      patchDir: args.patch,
+      readEncoding: args.renc,
+      writeEncoding: args.wenc,
+      pathResolver: null,
+    };
+    if (args.verbose) {
       logger.logLevel = LogLevel.DEBUG;
     }
-    if (options.extract) {
-      extract(options.root, options.patch);
-    } else if (options.generate) {
-      extract(options.root, options.patch, options.source);
-    } else if (options.apply) {
-      apply(options.root, options.patch, options.output);
+    if (args.extract) {
+      generate(options);
+    } else if (args.generate) {
+      generate({
+        ...options,
+        sourceDirs: [args.source],
+      });
+    } else if (args.apply) {
+      apply({
+        ...options,
+        outDir: args.output,
+      });
     } else {
       logger.error(
         'At least one of --extract, --generate, or --apply must be specified.',

@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { WolfContext } from '../operation/wolf-context';
 import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
 import { logger } from '../logger';
 import { compareVersion, forceWriteFile, groupBy } from '../util';
@@ -10,6 +9,7 @@ import { TranslationContext } from './translation-context';
 import { TranslationEntry } from './translation-entry';
 import { TranslationString } from './translation-string';
 import { ReadWolftransContext } from '../wolf/read-wolftrans-context';
+import { GlobalOptions } from '../operation/options';
 
 enum LoadPatchFileState {
   Header = 'header',
@@ -270,13 +270,13 @@ export class TranslationDict {
     // existing entries will take effect.
     // This might result in some contexts missing patch callback.
     Object.keys(patchMap)
-      .map((file) => WolfContext.pathResolver.patchPath(file))
+      .map((file) => GlobalOptions.pathResolver.patchPath(file))
       .filter((patchPath) => fs.existsSync(patchPath))
       .forEach((patchPath) => {
         this.load(patchPath);
       });
     for (const patchFile in patchMap) {
-      const patchPath = WolfContext.pathResolver.patchPath(patchFile);
+      const patchPath = GlobalOptions.pathResolver.patchPath(patchFile);
       if (fs.existsSync(patchPath)) {
         this.updatePatch(patchPath, patchMap[patchFile]);
       } else {

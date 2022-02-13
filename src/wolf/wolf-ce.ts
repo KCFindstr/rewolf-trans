@@ -9,7 +9,7 @@ import { addLeadingChar, bufferStartsWith, forceWriteFile } from '../util';
 import { PathResolver } from '../operation/path-resolver';
 import { RewtArchive } from '../archive/rewt-archive';
 import { WolfCommonEvent } from './wolf-common-event';
-import { WolfContext } from '../operation/wolf-context';
+import { GlobalOptions } from '../operation/options';
 
 export class WolfCE extends RewtArchive implements ISerializable {
   events_: WolfCommonEvent[];
@@ -60,7 +60,7 @@ export class WolfCE extends RewtArchive implements ISerializable {
   override generatePatch(dict: TranslationDict): void {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
-    const relativeFile = WolfContext.pathResolver.relativePath(patchPath);
+    const relativeFile = GlobalOptions.pathResolver.relativePath(patchPath);
     const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.CE);
     for (const event of this.events_) {
       ctxBuilder.patchFile = path.join(

@@ -3,7 +3,7 @@ import * as iconv from 'iconv-lite';
 import { logger } from '../logger';
 import { TranslationString } from '../translation/translation-string';
 import { Crypko } from '../wolf/crypko';
-import { WolfContext } from '../operation/wolf-context';
+import { GlobalOptions } from '../operation/options';
 
 export type ReadValueFn = (file: FileCoder) => number;
 
@@ -93,7 +93,7 @@ export class FileCoder {
     );
   }
 
-  readString(encoding = WolfContext.readEncoding): string {
+  readString(encoding = GlobalOptions.readEncoding): string {
     const len = this.readUIntLE();
     this.assert(len > 0, `Unexpected string length ${len}`);
     const bytes = this.readBytes(len - 1);
@@ -102,7 +102,7 @@ export class FileCoder {
     return str;
   }
 
-  readTString(encoding = WolfContext.readEncoding): TranslationString {
+  readTString(encoding = GlobalOptions.readEncoding): TranslationString {
     return TranslationString.FromRawStr(this.readString(encoding));
   }
 
