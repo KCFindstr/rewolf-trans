@@ -3,12 +3,12 @@ import { BufferStream } from '../archive/buffer-stream';
 import { CTX, WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
 import { bufferStartsWith, forceWriteFile } from '../util';
 import { ISerializable } from '../interfaces';
-import { RewolfTransArchive } from '../archive/rewt-archive';
+import { RewtArchive } from '../archive/rewt-archive';
 import { WolfEvent } from './wolf-events';
 import { TranslationDict } from '../translation/translation-dict';
-import { WolfContext } from './wolf-context';
+import { WolfContext } from '../operation/wolf-context';
 import { ContextBuilder } from '../translation/context-builder';
-import { PathResolver } from './path-resolver';
+import { PathResolver } from '../operation/path-resolver';
 
 export enum WolfArchiveType {
   Invalid,
@@ -16,7 +16,7 @@ export enum WolfArchiveType {
   En,
 }
 
-export class WolfMap extends RewolfTransArchive implements ISerializable {
+export class WolfMap extends RewtArchive implements ISerializable {
   protected mapType_ = WolfArchiveType.Invalid;
   protected tilesetId_ = -1;
   protected width_ = -1;

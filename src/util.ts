@@ -8,6 +8,9 @@ export function ensureDir(dir: string) {
 }
 
 export function getFiles(dir: string, recursive = false) {
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
   const files = fs.readdirSync(dir);
   const result: string[] = [];
   for (const file of files) {

@@ -1,23 +1,22 @@
 import * as fs from 'fs';
-import * as path from 'path';
-import { loadArchive } from '../wolf/auto-load';
-import { PathResolver } from '../wolf/path-resolver';
-import { RewolfTransArchive } from '../archive/rewt-archive';
-import { WolfContext } from '../wolf/wolf-context';
+import { RewtArchive } from '../archive/rewt-archive';
+import { WolfContext } from '../operation/wolf-context';
+import { PathResolver } from '../operation/path-resolver';
 import { logger } from '../logger';
 import { TranslationDict } from '../translation/translation-dict';
 import { Constructor, getFiles } from '../util';
 
-export class WolfGame {
-  protected archives_: RewolfTransArchive[];
+export class RewtGame {
+  protected archives_: RewtArchive[];
   protected dict_: TranslationDict;
-  protected dataDir_: string;
 
-  constructor(dir: string) {
-    if (!fs.existsSync(dir)) {
-      throw new Error(`Directory ${dir} does not exist.`);
+  constructor(
+    protected dataDir_: string,
+    loadArchive: (file: string) => RewtArchive,
+  ) {
+    if (!fs.existsSync(dataDir_)) {
+      throw new Error(`Directory ${dataDir_} does not exist.`);
     }
-    this.dataDir_ = path.join(dir, 'Data');
     const files = getFiles(this.dataDir_, true);
     this.archives_ = [];
     for (const file of files) {
@@ -29,9 +28,7 @@ export class WolfGame {
     }
   }
 
-  public filterArchives<T extends RewolfTransArchive>(
-    type: Constructor<T>,
-  ): T[] {
+  public filterArchives<T extends RewtArchive>(type: Constructor<T>): T[] {
     return this.archives_.filter((archive) => archive instanceof type) as T[];
   }
 

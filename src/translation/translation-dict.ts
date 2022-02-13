@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { WolfContext } from '../wolf/wolf-context';
+import { WolfContext } from '../operation/wolf-context';
 import { REWOLFTRANS_PATCH_VERSION, REWOLFTRANS_VERSION } from '../constants';
 import { logger } from '../logger';
 import { compareVersion, forceWriteFile, groupBy } from '../util';

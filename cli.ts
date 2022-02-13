@@ -2,7 +2,7 @@
 
 import { extract } from './src/operation/extract';
 import yargs from 'yargs';
-import { WolfContext } from './src/wolf/wolf-context';
+import { WolfContext } from './src/operation/wolf-context';
 import { apply } from './src/operation/apply';
 import { logger, LogLevel } from './src/logger';
 

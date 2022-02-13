@@ -2,7 +2,7 @@ import { BufferStream } from './archive/buffer-stream';
 import { FileCoder } from './archive/file-coder';
 import { TranslationDict } from './translation/translation-dict';
 import { ContextBuilder } from './translation/context-builder';
-import { PathResolver } from './wolf/path-resolver';
+import { PathResolver } from './operation/path-resolver';
 
 export interface ISerializable {
   serialize(stream: BufferStream): void;

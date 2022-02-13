@@ -1,5 +1,5 @@
 import * as iconv from 'iconv-lite';
-import { WolfContext } from '../wolf/wolf-context';
+import { WolfContext } from '../operation/wolf-context';
 import { ISerializable } from '../interfaces';
 import { TranslationString } from '../translation/translation-string';
 

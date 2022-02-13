@@ -1,12 +1,12 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { equalsIgnoreCase } from '../util';
-import { RewolfTransArchive } from '../archive/rewt-archive';
+import { RewtArchive } from '../archive/rewt-archive';
 import { WolfMap } from './wolf-map';
 import { WolfDatabase } from './wolf-database';
 import { WolfCE } from './wolf-ce';
 
-export function loadArchive(filename: string): RewolfTransArchive {
+export function loadWolfArchive(filename: string): RewtArchive {
   const parentDir = path.basename(path.dirname(filename));
   const basename = path.basename(filename);
   if (equalsIgnoreCase(parentDir, 'MapData')) {

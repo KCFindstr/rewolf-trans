@@ -4,15 +4,15 @@ import { CTX, WOLF_DAT } from '../constants';
 import { forceWriteFile } from '../util';
 import { FileCoder } from '../archive/file-coder';
 import { IProjectData } from '../interfaces';
-import { RewolfTransArchive } from '../archive/rewt-archive';
+import { RewtArchive } from '../archive/rewt-archive';
 import { WolfType } from './wolf-type';
 import { TranslationDict } from '../translation/translation-dict';
-import { WolfContext } from './wolf-context';
+import { WolfContext } from '../operation/wolf-context';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
-import { PathResolver } from './path-resolver';
+import { PathResolver } from '../operation/path-resolver';
 
-export class WolfDatabase extends RewolfTransArchive implements IProjectData {
+export class WolfDatabase extends RewtArchive implements IProjectData {
   protected project_: FileCoder;
   protected types_: WolfType[];
   protected unknownEncrypted1_: number;
