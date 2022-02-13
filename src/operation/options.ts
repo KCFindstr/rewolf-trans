@@ -1,9 +1,12 @@
+import { logger, LogLevel } from '../logger';
+
 export interface RewtOptions {
   game: string;
   gameDir: string;
   patchDir: string;
   readEncoding: string;
   writeEncoding: string;
+  verbose: boolean;
 }
 
 export interface ApplyOptions extends RewtOptions {
@@ -20,6 +23,7 @@ export const DefaultOptions: RewtOptions = {
   patchDir: '',
   readEncoding: 'SHIFT_JIS',
   writeEncoding: 'GBK',
+  verbose: false,
 };
 
 export const DefaultApplyOptions: ApplyOptions = {
@@ -40,4 +44,9 @@ export function SetGlobalOptions(
   defaults: RewtOptions = DefaultOptions,
 ) {
   Object.assign(GlobalOptions, defaults, options);
+  if (GlobalOptions.verbose) {
+    logger.logLevel = LogLevel.DEBUG;
+  } else {
+    logger.logLevel = LogLevel.INFO;
+  }
 }

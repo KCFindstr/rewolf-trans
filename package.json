@@ -15,7 +15,7 @@
     "dev": "ts-node index.ts",
     "build": "tsc",
     "installdeps": "npm i -g typescript @types/node",
-    "lint": "eslint \"src/**/*.ts\" index.ts",
+    "lint": "eslint \"src/**/*.ts\" *.ts",
     "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,14 +27,13 @@
   "author": "KCFindstr",
   "license": "MIT",
   "dependencies": {
+    "@rushstack/ts-command-line": "^4.10.6",
     "iconv-lite": "^0.6.3",
-    "string-similarity": "^4.0.4",
-    "yargs": "^17.3.1"
+    "string-similarity": "^4.0.4"
   },
   "devDependencies": {
     "@types/node": "^17.0.17",
     "@types/string-similarity": "^4.0.0",
-    "@types/yargs": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "eslint": "^8.9.0",

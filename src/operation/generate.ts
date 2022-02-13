@@ -7,7 +7,7 @@ import {
 } from './options';
 import { GlobalRegistry } from './registry';
 
-export function generate(options: GenerateOptions) {
+export function GeneratePatch(options: GenerateOptions) {
   SetGlobalOptions(options, DefaultGenerateOptions);
   const patchDir = path.join(options.patchDir, PATCH_DIR_NAME);
   const gameClass = GlobalRegistry.getGame(options.game);

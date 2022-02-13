@@ -4,7 +4,7 @@ import { OUTPUT_DIR_NAME, PATCH_DIR_NAME } from '../constants';
 import { ApplyOptions, DefaultApplyOptions, SetGlobalOptions } from './options';
 import { GlobalRegistry } from './registry';
 
-export function apply(options: ApplyOptions) {
+export function ApplyPatch(options: ApplyOptions) {
   SetGlobalOptions(options, DefaultApplyOptions);
   const patchDir = path.join(options.patchDir, PATCH_DIR_NAME);
   const outDir = path.join(options.outDir, OUTPUT_DIR_NAME);

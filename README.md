@@ -22,43 +22,44 @@ Use `npx rewolf-trans <args>` to run this tool. Notice that this package will be
 
 ### Parameters
 This parameters might appear later in this doc without being explained again.
-- `<game root directory>`: The root directory of the game you want to translate. This is where `Game.exe` lives.
-- `<patch directory>`: The directory where you want to locate the patch files.
-- `<output directory>`: The directory where you want to pack the translated game files.
-- `<source directory>`: The directory where extra patch files are located. In principle this directory is readonly but please backup to be extra careful.
-
-### Extract Patch
-
-Extract patch files to `<patch directory>/rewt-patch`. Existing files might be overwritten, so please backup them first or avoid using your working directory.
-
-```bash
-npx rewolf-trans --extract --root <game root directory> --patch <patch directory>
-```
+- `GAME_DIR`: The root directory of the game you want to translate. This is where `Game.exe` lives.
+- `PATCH_DIR`: The directory where you want to locate the patch files.
+- `OUT_DIR`: The directory where you want to pack the translated game files.
+- `SOURCE_DIR`: The directory where extra patch files are located. In principle this directory is readonly but please backup to be extra careful.
 
 ### Generate Patch
 
-In addition to `--extract`, it takes in another parameter `<source directory>`. When generating patch files, the tool will try to read all existing patch files in `<source directory>` and write any changes or translations to the generated files.
+Generate patch files to `PATCH_DIR/rewt-patch`. Existing files might be overwritten, so please backup them first or avoid using your working directory. If a list of `SOURCE_DIR` is provided, the tool will try to read all existing patch files in `SOURCE_DIR` and write any changes or translations to the generated files.
 
-This is very helpful when you want to upgrade from exsiting Wolf Trans patch files, since this tool tries to be compatible when reading (but not writing!) the Wolf Trans patch file format. However, due to some differences in implementation, some data might fail to upgrade, which will be logged.
+The optional `SOURCE_DIR` is very helpful when you want to upgrade from exsiting Wolf Trans patch files, since this tool tries to be compatible when reading (but not writing!) the Wolf Trans patch file format. However, due to some differences in implementation, some data might fail to upgrade, which will be logged.
 
 ```bash
-npx rewolf-trans --generate --root <game root directory> --patch <patch directory> --source <source directory>
+npx rewolf-trans -r GAME_DIR -p PATCH_DIR generate -s SOURCE_DIR
 ```
 
 ### Apply Patch
-Reads all patch files from `<patch directory>/rewt-patch` and writes patched game data files to `<output directory>/rewt-out`.
+Reads all patch files from `PATCH_DIR/rewt-patch` and writes patched game data files to `OUT_DIR/rewt-out`.
 
 **Warning**: The output directory will be recursively removed if it exists.
 
 ```bash
-npx rewolf-trans --apply --root <game root directory> --patch <patch directory> --output <output directory>
+npx rewolf-trans -r GAME_DIR -p PATCH_DIR apply -o OUT_DIR
 ```
 
 ### Specify Encoding
 By default, the tool reads SHIFT_JIS and writes GBK. To change this, append `--renc <encoding>` (read encoding) and `--wenc <encoding>` (write encoding) to these commands.  See [here](https://www.npmjs.com/package/iconv-lite#supported-encodings) for the list of supported encodings.
 
+**Note**: You must append them before `generate` or `apply`.
+
 ### Verbose Logging
-Add the flag `--verbose` to enable verbose logging.
+Add the flag `--verbose`/`-v` to enable verbose logging.
+
+**Note**: You must append it before `generate` or `apply`.
+
+### Advanced Usage
+For additional options, please refer to the command line help by running `npx rewolf-trans -h` or `npx rewolf-trans <command> -h`.
+
+Note that the flags before `<command>` (i.e. `generate` or `apply`) are treated differently. So please pay attention to the order of flags in the above examples.
 
 ## Other Topics
 ### Patch Format
@@ -71,5 +72,5 @@ Although very similar, this tool uses a different patch file format than Wolf Tr
 One major difference is that this tool exposes some dangerous strings such as Database Commands and string arguments. Although some of them should be translated, modifying others might break the game. Translation texts will be written to separate patch files according to how risky it is to modify these strings, but if you see mixed contexts and only want to translate some of them, try manually separating contexts into different `> BEGIN STRING` and `> END STRING` blocks.
 
 ## Disclaimer
-1. This tool might not work with all the games, and please submit an issue if it does not work / misses texts that should be translated / has weird behavior. Verbose debug logs will be helpful. But it's not ganranteed that I will have capacity to investigate the issue.
+1. This tool might not work with all the games, and please submit an issue if it does not work / misses texts that should be translated / has weird behavior. Verbose debug logs will be helpful. But it's not guarantee that I will have capacity to investigate the issue.
 2. Avoid modifying the original patch files, as they might be overwritten if you run this tool again. Backup your translation frequently. The author is not responsible for any damage or copyright infringement caused by users using this tool.
