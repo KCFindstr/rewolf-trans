@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadArchive } from '../archive/auto-load';
-import { PathResolver } from '../archive/path-resolver';
-import { WolfArchive } from '../archive/wolf-archive';
-import { WolfContext } from '../archive/wolf-context';
+import { loadArchive } from '../wolf/auto-load';
+import { PathResolver } from '../wolf/path-resolver';
+import { WolfArchive } from '../wolf/wolf-archive';
+import { WolfContext } from '../wolf/wolf-context';
 import { logger } from '../logger';
 import { TranslationDict } from '../translation/translation-dict';
 import { Constructor, getFiles } from '../util';
