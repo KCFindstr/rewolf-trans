@@ -7,7 +7,7 @@ import { ContextBuilder } from './context-builder';
 import { ContextTrie } from './context-trie';
 import { isTranslatable, unescapeMultiline } from './string-utils';
 import { TranslationContext } from './translation-context';
-import { PatchFileCategory, TranslationEntry } from './translation-entry';
+import { TranslationEntry } from './translation-entry';
 import { TranslationString } from './translation-string';
 import { ReadWolftransContext } from '../wolf/read-wolftrans-context';
 
@@ -82,7 +82,7 @@ export class TranslationDict {
 
   public add(
     original: string,
-    level: PatchFileCategory,
+    level: string,
     patchFile: string,
     context: TranslationContext,
   ): boolean {
@@ -105,7 +105,7 @@ export class TranslationDict {
 
   public addTexts(
     ctxBuilder: ContextBuilder,
-    category: PatchFileCategory,
+    category: string,
     texts: TranslationString[],
   ) {
     for (let i = 0; i < texts.length; i++) {

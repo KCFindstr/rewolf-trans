@@ -14,10 +14,10 @@ export enum PatchFileCategory {
 export class TranslationEntry implements ICustomKey, IString {
   protected patchFilePrefix_: string;
   public original: string;
-  public category: PatchFileCategory = PatchFileCategory.Normal;
+  public category: string = PatchFileCategory.Normal;
   public ctxs: TranslationContext[] = [];
 
-  static ParseKey(original: string, category: PatchFileCategory) {
+  static ParseKey(original: string, category: string) {
     return `${original}/${category}`;
   }
 
