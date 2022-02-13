@@ -7,11 +7,11 @@ import { escapePath } from '../translation/string-utils';
 import { TranslationDict } from '../translation/translation-dict';
 import { addLeadingChar, bufferStartsWith, forceWriteFile } from '../util';
 import { PathResolver } from './path-resolver';
-import { WolfArchive } from './wolf-archive';
+import { RewolfTransArchive } from '../archive/rewt-archive';
 import { WolfCommonEvent } from './wolf-common-event';
 import { WolfContext } from './wolf-context';
 
-export class WolfCE extends WolfArchive implements ISerializable {
+export class WolfCE extends RewolfTransArchive implements ISerializable {
   events_: WolfCommonEvent[];
   isValid_ = false;
 

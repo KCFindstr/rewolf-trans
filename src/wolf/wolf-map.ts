@@ -3,7 +3,7 @@ import { BufferStream } from '../archive/buffer-stream';
 import { CTX, WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
 import { bufferStartsWith, forceWriteFile } from '../util';
 import { ISerializable } from '../interfaces';
-import { WolfArchive } from './wolf-archive';
+import { RewolfTransArchive } from '../archive/rewt-archive';
 import { WolfEvent } from './wolf-events';
 import { TranslationDict } from '../translation/translation-dict';
 import { WolfContext } from './wolf-context';
@@ -16,7 +16,7 @@ export enum WolfArchiveType {
   En,
 }
 
-export class WolfMap extends WolfArchive implements ISerializable {
+export class WolfMap extends RewolfTransArchive implements ISerializable {
   protected mapType_ = WolfArchiveType.Invalid;
   protected tilesetId_ = -1;
   protected width_ = -1;

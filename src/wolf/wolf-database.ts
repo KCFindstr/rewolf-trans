@@ -4,7 +4,7 @@ import { CTX, WOLF_DAT } from '../constants';
 import { forceWriteFile } from '../util';
 import { FileCoder } from '../archive/file-coder';
 import { IProjectData } from '../interfaces';
-import { WolfArchive } from './wolf-archive';
+import { RewolfTransArchive } from '../archive/rewt-archive';
 import { WolfType } from './wolf-type';
 import { TranslationDict } from '../translation/translation-dict';
 import { WolfContext } from './wolf-context';
@@ -12,7 +12,7 @@ import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
 import { PathResolver } from './path-resolver';
 
-export class WolfDatabase extends WolfArchive implements IProjectData {
+export class WolfDatabase extends RewolfTransArchive implements IProjectData {
   protected project_: FileCoder;
   protected types_: WolfType[];
   protected unknownEncrypted1_: number;

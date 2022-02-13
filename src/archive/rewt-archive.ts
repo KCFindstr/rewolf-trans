@@ -1,9 +1,9 @@
 import { IGeneratePatch, IWriteData } from '../interfaces';
 import { TranslationDict } from '../translation/translation-dict';
-import { FileCoder } from '../archive/file-coder';
-import { PathResolver } from './path-resolver';
+import { FileCoder } from './file-coder';
+import { PathResolver } from '../wolf/path-resolver';
 
-export abstract class WolfArchive implements IGeneratePatch, IWriteData {
+export abstract class RewolfTransArchive implements IGeneratePatch, IWriteData {
   protected file_: FileCoder;
 
   constructor(filename: string, seedIndices?: number[]) {

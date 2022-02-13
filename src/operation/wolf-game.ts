@@ -2,14 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { loadArchive } from '../wolf/auto-load';
 import { PathResolver } from '../wolf/path-resolver';
-import { WolfArchive } from '../wolf/wolf-archive';
+import { RewolfTransArchive } from '../archive/rewt-archive';
 import { WolfContext } from '../wolf/wolf-context';
 import { logger } from '../logger';
 import { TranslationDict } from '../translation/translation-dict';
 import { Constructor, getFiles } from '../util';
 
 export class WolfGame {
-  protected archives_: WolfArchive[];
+  protected archives_: RewolfTransArchive[];
   protected dict_: TranslationDict;
   protected dataDir_: string;
 
@@ -29,7 +29,9 @@ export class WolfGame {
     }
   }
 
-  public filterArchives<T extends WolfArchive>(type: Constructor<T>): T[] {
+  public filterArchives<T extends RewolfTransArchive>(
+    type: Constructor<T>,
+  ): T[] {
     return this.archives_.filter((archive) => archive instanceof type) as T[];
   }
 
