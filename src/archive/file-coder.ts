@@ -93,17 +93,17 @@ export class FileCoder {
     );
   }
 
-  readString(): string {
+  readString(encoding = WolfContext.readEncoding): string {
     const len = this.readUIntLE();
     this.assert(len > 0, `Unexpected string length ${len}`);
     const bytes = this.readBytes(len - 1);
     this.expectByte(0);
-    const str = iconv.decode(bytes, WolfContext.readEncoding);
+    const str = iconv.decode(bytes, encoding);
     return str;
   }
 
-  readTString(): TranslationString {
-    return TranslationString.FromRawStr(this.readString());
+  readTString(encoding = WolfContext.readEncoding): TranslationString {
+    return TranslationString.FromRawStr(this.readString(encoding));
   }
 
   readBytes(count = 1): Buffer {

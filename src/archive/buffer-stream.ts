@@ -38,18 +38,18 @@ export class BufferStream {
     }
   }
 
-  appendString(str: string, translated = false) {
-    const buffer = iconv.encode(
-      str,
-      translated ? WolfContext.writeEncoding : WolfContext.readEncoding,
-    );
+  appendString(str: string, encoding = WolfContext.writeEncoding) {
+    const buffer = iconv.encode(str, encoding);
     this.appendInt(buffer.length + 1);
     this.appendBuffer(buffer);
     this.appendByte(0);
   }
 
   appendTString(str: TranslationString) {
-    this.appendString(str.text, str.isTranslated);
+    this.appendString(
+      str.text,
+      str.isTranslated ? WolfContext.writeEncoding : WolfContext.readEncoding,
+    );
   }
 
   appendStringArray(strs: string[], appendCountFn = DefaultAppendValueFn) {
