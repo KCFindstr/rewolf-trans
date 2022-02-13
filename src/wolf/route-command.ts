@@ -1,5 +1,5 @@
 import { BufferStream } from '../archive/buffer-stream';
-import { WOLF_MAP } from '../constants';
+import { WOLF_MAP } from './constants';
 import { FileCoder } from '../archive/file-coder';
 import { ISerializable } from '../interfaces';
 

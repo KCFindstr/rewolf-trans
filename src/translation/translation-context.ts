@@ -1,4 +1,4 @@
-import { CTX } from '../constants';
+import { CTX } from '../wolf/constants';
 import { ICustomKey, IString } from '../interfaces';
 import { ContextPathPart } from './context-builder';
 import { isTranslatable, safeJoin, safeSplit } from './string-utils';

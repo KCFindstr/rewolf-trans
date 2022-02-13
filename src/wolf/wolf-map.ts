@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { BufferStream } from '../archive/buffer-stream';
-import { CTX, WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from '../constants';
+import { CTX, WOLF_EN_HEADER, WOLF_JP_HEADER, WOLF_MAP } from './constants';
 import { bufferStartsWith, forceWriteFile } from '../util';
 import { ISerializable } from '../interfaces';
 import { RewtArchive } from '../archive/rewt-archive';

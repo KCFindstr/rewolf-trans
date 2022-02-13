@@ -1,5 +1,5 @@
 import { BufferStream } from '../archive/buffer-stream';
-import { WOLF_CE } from '../constants';
+import { WOLF_CE } from './constants';
 import { FileCoder } from '../archive/file-coder';
 import { IAppendContext, ISerializable } from '../interfaces';
 import { createCommand, WolfCommand } from './wolf-command';

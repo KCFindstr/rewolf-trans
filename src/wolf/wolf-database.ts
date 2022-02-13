@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { BufferStream } from '../archive/buffer-stream';
-import { CTX, WOLF_DAT } from '../constants';
+import { CTX, WOLF_DAT } from './constants';
 import { forceWriteFile } from '../util';
 import { FileCoder } from '../archive/file-coder';
 import { IProjectData } from '../interfaces';

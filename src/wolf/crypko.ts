@@ -1,4 +1,4 @@
-import { WOLF_DAT } from '../constants';
+import { WOLF_DAT } from './constants';
 
 export class Crypko {
   protected readonly isEncrypted_: boolean = false;

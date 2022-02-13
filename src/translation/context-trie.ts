@@ -1,4 +1,4 @@
-import { CTX } from '../constants';
+import { CTX } from '../wolf/constants';
 import { TranslationContext } from './translation-context';
 
 export class ContextTrieNode {

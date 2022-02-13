@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { BufferStream } from '../archive/buffer-stream';
-import { CTX, WOLF_CE } from '../constants';
+import { CTX, WOLF_CE } from './constants';
 import { ISerializable } from '../interfaces';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
