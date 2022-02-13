@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
 import { logger } from '../logger';
 import { TranslationString } from '../translation/translation-string';
-import { Crypko } from '../wolf/crypko';
 import { GlobalOptions } from '../operation/options';
+import { ICrypko } from '../interfaces';
 
 export type ReadValueFn = (file: FileCoder) => number;
 
@@ -12,13 +12,19 @@ const DefaultReadValueFn: ReadValueFn = (file) => file.readUIntLE();
 export class FileCoder {
   protected buffer_: Buffer;
   protected offset_: number;
-  protected crypko_: Crypko;
 
-  constructor(protected readonly filename_: string, seedIndices_?: number[]) {
+  constructor(
+    protected readonly filename_: string,
+    protected crypko_?: ICrypko,
+  ) {
     try {
       const buffer = fs.readFileSync(filename_);
-      this.crypko_ = new Crypko(buffer, seedIndices_);
-      this.buffer_ = this.crypko_.decrypt();
+      if (this.crypko_) {
+        this.crypko_.setData(buffer);
+        this.buffer_ = this.crypko_.decrypt();
+      } else {
+        this.buffer_ = buffer;
+      }
     } catch (e) {
       logger.info(`Failed to read ${filename_}: ${e.stack || e}`);
       this.buffer_ = null;
@@ -30,8 +36,8 @@ export class FileCoder {
     return this.buffer_.length > 0;
   }
 
-  get isEncrypted() {
-    return this.crypko_.isEncrypted;
+  get isEncrypted(): boolean {
+    return this.crypko_?.isEncrypted;
   }
 
   get filename() {

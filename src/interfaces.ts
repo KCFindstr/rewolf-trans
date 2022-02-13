@@ -33,3 +33,10 @@ export interface ICustomKey {
 export interface IString {
   toString(): string;
 }
+
+export interface ICrypko {
+  setData(data: Buffer): void;
+  get isEncrypted(): boolean;
+  decrypt(): Buffer;
+  encrypt(data: Buffer): Buffer;
+}

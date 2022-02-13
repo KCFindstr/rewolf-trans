@@ -10,6 +10,7 @@ import { TranslationDict } from '../translation/translation-dict';
 import { ContextBuilder } from '../translation/context-builder';
 import { escapePath } from '../translation/string-utils';
 import { PathResolver } from '../operation/path-resolver';
+import { WolfCrypko } from './wolf-crypko';
 
 export class WolfDatabase extends RewtArchive implements IProjectData {
   protected project_: FileCoder;
@@ -30,7 +31,8 @@ export class WolfDatabase extends RewtArchive implements IProjectData {
   }
 
   constructor(projectFile: string, dataFile: string) {
-    super(dataFile, WOLF_DAT.SEED_INDICES);
+    const crypko = new WolfCrypko(WOLF_DAT.SEED_INDICES);
+    super(dataFile, crypko);
     this.project_ = new FileCoder(projectFile);
   }
 

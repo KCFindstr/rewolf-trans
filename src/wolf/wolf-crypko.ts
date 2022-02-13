@@ -1,18 +1,23 @@
+import { ICrypko } from '../interfaces';
 import { WOLF_DAT } from './constants';
 
-export class Crypko {
-  protected readonly isEncrypted_: boolean = false;
-  protected readonly cryptHeader_: Buffer;
-  protected readonly seeds_: number[];
+export class WolfCrypko implements ICrypko {
+  protected isEncrypted_ = false;
+  protected cryptHeader_: Buffer;
+  protected seeds_: number[];
+  protected data_: Buffer;
 
-  constructor(protected readonly data_: Buffer, seedIndices_?: number[]) {
-    if (!data_ || !seedIndices_) {
+  constructor(protected readonly seedIndices_?: number[]) {}
+
+  setData(data: Buffer): void {
+    this.data_ = data;
+    if (!this.data_ || !this.seedIndices_) {
       return;
     }
-    if (data_[0] !== 0) {
+    if (this.data_[0] !== 0) {
       this.isEncrypted_ = true;
       this.cryptHeader_ = this.data_.slice(0, WOLF_DAT.CRYPT_HEADER_SIZE);
-      this.seeds_ = seedIndices_.map((i) => this.cryptHeader_[i]);
+      this.seeds_ = this.seedIndices_.map((i) => this.cryptHeader_[i]);
       this.data_ = this.data_.slice(WOLF_DAT.CRYPT_HEADER_SIZE);
     }
   }
@@ -29,7 +34,7 @@ export class Crypko {
     return this.data_;
   }
 
-  encrypt(data = this.data_) {
+  encrypt(data: Buffer) {
     if (!this.isEncrypted) {
       return data;
     }

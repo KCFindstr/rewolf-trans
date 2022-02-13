@@ -1,4 +1,4 @@
-import { IGeneratePatch, IWriteData } from '../interfaces';
+import { ICrypko, IGeneratePatch, IWriteData } from '../interfaces';
 import { TranslationDict } from '../translation/translation-dict';
 import { FileCoder } from './file-coder';
 import { PathResolver } from '../operation/path-resolver';
@@ -6,8 +6,8 @@ import { PathResolver } from '../operation/path-resolver';
 export abstract class RewtArchive implements IGeneratePatch, IWriteData {
   protected file_: FileCoder;
 
-  constructor(filename: string, seedIndices?: number[]) {
-    this.file_ = new FileCoder(filename, seedIndices);
+  constructor(filename: string, crypko?: ICrypko) {
+    this.file_ = new FileCoder(filename, crypko);
   }
 
   get buffer() {
