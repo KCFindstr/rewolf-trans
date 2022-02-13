@@ -1,12 +1,9 @@
-import { PathResolver } from './path-resolver';
-
 export interface RewtOptions {
   game: string;
   gameDir: string;
   patchDir: string;
   readEncoding: string;
   writeEncoding: string;
-  pathResolver: PathResolver;
 }
 
 export interface ApplyOptions extends RewtOptions {
@@ -23,7 +20,6 @@ export const DefaultOptions: RewtOptions = {
   patchDir: '',
   readEncoding: 'SHIFT_JIS',
   writeEncoding: 'GBK',
-  pathResolver: null,
 };
 
 export const DefaultApplyOptions: ApplyOptions = {

@@ -9,7 +9,7 @@ import { TranslationContext } from './translation-context';
 import { TranslationEntry } from './translation-entry';
 import { TranslationString } from './translation-string';
 import { ReadWolftransContext } from '../wolf/read-wolftrans-context';
-import { GlobalOptions } from '../operation/options';
+import { PathResolver } from '../operation/path-resolver';
 
 enum LoadPatchFileState {
   Header = 'header',
@@ -260,7 +260,7 @@ export class TranslationDict {
     }
   }
 
-  public write() {
+  public write(pathResolver: PathResolver) {
     const patchMap = groupBy(
       Object.values(this.entries),
       (entry) => entry.patchFile,
@@ -270,13 +270,13 @@ export class TranslationDict {
     // existing entries will take effect.
     // This might result in some contexts missing patch callback.
     Object.keys(patchMap)
-      .map((file) => GlobalOptions.pathResolver.patchPath(file))
+      .map((file) => pathResolver.patchPath(file))
       .filter((patchPath) => fs.existsSync(patchPath))
       .forEach((patchPath) => {
         this.load(patchPath);
       });
     for (const patchFile in patchMap) {
-      const patchPath = GlobalOptions.pathResolver.patchPath(patchFile);
+      const patchPath = pathResolver.patchPath(patchFile);
       if (fs.existsSync(patchPath)) {
         this.updatePatch(patchPath, patchMap[patchFile]);
       } else {

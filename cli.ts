@@ -74,7 +74,6 @@ async function main() {
       patchDir: args.patch,
       readEncoding: args.renc,
       writeEncoding: args.wenc,
-      pathResolver: null,
     };
     if (args.verbose) {
       logger.logLevel = LogLevel.DEBUG;

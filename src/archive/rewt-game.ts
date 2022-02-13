@@ -4,18 +4,19 @@ import { PathResolver } from '../operation/path-resolver';
 import { logger } from '../logger';
 import { TranslationDict } from '../translation/translation-dict';
 import { Constructor, getFiles } from '../util';
-import { GlobalOptions } from '../operation/options';
 
 export type ArchiveLoadFn = (file: string) => RewtArchive;
 
 export abstract class RewtGame {
   protected archives_: RewtArchive[];
   protected dict_: TranslationDict;
+  protected pathResolver_: PathResolver;
 
   constructor(protected dataDir_: string) {
     if (!fs.existsSync(dataDir_)) {
       throw new Error(`Directory ${dataDir_} does not exist.`);
     }
+    this.pathResolver_ = new PathResolver(this.dataDir_);
     const files = getFiles(this.dataDir_, true);
     this.archives_ = [];
     for (const file of files) {
@@ -52,10 +53,9 @@ export abstract class RewtGame {
   }
 
   public generatePatch() {
-    GlobalOptions.pathResolver = new PathResolver(this.dataDir_);
     this.dict_ = new TranslationDict();
     for (const archive of this.archives_) {
-      archive.generatePatch(this.dict_);
+      archive.generatePatch(this.pathResolver_, this.dict_);
     }
   }
 
@@ -66,14 +66,14 @@ export abstract class RewtGame {
   }
 
   public writePatch(patchDir: string) {
-    GlobalOptions.pathResolver.toDir = patchDir;
-    this.dict_.write();
+    this.pathResolver_.toDir = patchDir;
+    this.dict_.write(this.pathResolver_);
   }
 
   public writeData(dataDir: string) {
-    GlobalOptions.pathResolver.toDir = dataDir;
+    this.pathResolver_.toDir = dataDir;
     for (const archive of this.archives_) {
-      archive.write(GlobalOptions.pathResolver);
+      archive.write(this.pathResolver_);
     }
   }
 }

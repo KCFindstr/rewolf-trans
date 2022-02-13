@@ -15,7 +15,7 @@ export interface IProjectData {
 }
 
 export interface IGeneratePatch {
-  generatePatch(dict: TranslationDict): void;
+  generatePatch(pathResolver: PathResolver, dict: TranslationDict): void;
 }
 
 export interface IAppendContext {

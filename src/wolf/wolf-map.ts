@@ -8,7 +8,6 @@ import { WolfEvent } from './wolf-events';
 import { TranslationDict } from '../translation/translation-dict';
 import { ContextBuilder } from '../translation/context-builder';
 import { PathResolver } from '../operation/path-resolver';
-import { GlobalOptions } from '../operation/options';
 
 export enum WolfArchiveType {
   Invalid,
@@ -89,10 +88,13 @@ export class WolfMap extends RewtArchive implements ISerializable {
     stream.appendByte(WOLF_MAP.EVENT_FINISH_INDICATOR);
   }
 
-  override generatePatch(dict: TranslationDict): void {
+  override generatePatch(
+    pathResolver: PathResolver,
+    dict: TranslationDict,
+  ): void {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
-    const relativeFile = GlobalOptions.pathResolver.relativePath(patchPath);
+    const relativeFile = pathResolver.relativePath(patchPath);
     const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.MPS);
     ctxBuilder.enter(pathInfo.name);
     for (const event of this.events_) {
