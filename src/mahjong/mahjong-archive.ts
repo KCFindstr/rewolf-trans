@@ -57,9 +57,13 @@ export class MahjongArchive extends RewtArchive {
     const relativeFile = pathResolver.relativePath(patchPath);
     const ctxBuilder = new ContextBuilder(MC_PATCH_TYPE.SCENE);
     ctxBuilder.enterPatch(relativeFile);
-    for (const entry of this.entries_) {
+    this.entries_.forEach((entry, i) => {
+      ctxBuilder.enterPatch(entry.name);
+      ctxBuilder.enter(i, entry.name);
       entry.appendContext(ctxBuilder, dict);
-    }
+      ctxBuilder.leave(i);
+      ctxBuilder.leavePatch(entry.name);
+    });
     ctxBuilder.leavePatch(relativeFile);
   }
 }

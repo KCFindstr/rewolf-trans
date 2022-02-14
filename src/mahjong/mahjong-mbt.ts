@@ -69,9 +69,11 @@ export class MahjongMBT implements IAppendContext {
 
   appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
     this.scenes.forEach((scene, i) => {
+      ctxBuilder.enterPatch(scene.name);
       ctxBuilder.enter(i, scene.name);
       scene.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(i);
+      ctxBuilder.leavePatch(scene.name);
     });
   }
 }

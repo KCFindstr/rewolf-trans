@@ -121,7 +121,7 @@ export class FileCoder {
   readStringUnsafe(encoding = GlobalOptions.readEncoding) {
     const start = this.offset;
     while (this.readByte() !== 0);
-    return iconv.decode(this.buffer.slice(start, this.offset), encoding);
+    return iconv.decode(this.buffer.slice(start, this.offset - 1), encoding);
   }
 
   readString(

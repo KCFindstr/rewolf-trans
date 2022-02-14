@@ -3,6 +3,7 @@ import { FileCoder } from '../archive/file-coder';
 import { IAppendContext } from '../interfaces';
 import { logger } from '../logger';
 import { ContextBuilder } from '../translation/context-builder';
+import { trimNull } from '../translation/string-utils';
 import { TranslationDict } from '../translation/translation-dict';
 import { bufferStartsWith } from '../util';
 import { MC_MBT_HEADER, MC_TEX_HEADER } from './constants';
@@ -10,7 +11,7 @@ import { MahjongMBT } from './mahjong-mbt';
 import { MahjongTex } from './mahjong-tex';
 
 export class MahjongDatEntry implements IAppendContext {
-  protected name_: string;
+  public name: string; // char[40], but trimmed
   protected unknown1_: number;
   protected unknown2_: number;
   protected flags_: number;
@@ -28,7 +29,7 @@ export class MahjongDatEntry implements IAppendContext {
   public filename: string;
 
   get fullpath() {
-    return path.join(this.filename, this.name_);
+    return path.join(this.filename, this.name);
   }
 
   constructor(file: FileCoder) {
@@ -36,7 +37,8 @@ export class MahjongDatEntry implements IAppendContext {
     this.filename = path.join(parsed.dir, parsed.name);
 
     // Read data
-    this.name_ = file.readString(() => 40);
+    this.name = trimNull(file.readString(() => 40));
+    // Expected char[40]
     this.unknown1_ = file.readByte();
     this.unknown2_ = file.readByte();
     this.flags_ = file.readUShortLE();
@@ -44,7 +46,7 @@ export class MahjongDatEntry implements IAppendContext {
     this.size_ = file.readUIntLE();
     this.reserved1_ = file.readUIntLEArray(() => 3);
     logger.debug(
-      `[${this.name_}] ${this.offset_.toString(16)} ${this.size_.toString(16)}`,
+      `[${this.name}] ${this.offset_.toString(16)} ${this.size_.toString(16)}`,
     );
 
     // Create subfile

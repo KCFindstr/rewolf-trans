@@ -10,10 +10,6 @@ export class MahjongGame extends RewtGame {
     if (!equalsIgnoreCase(parsed.ext, '.dat')) {
       return null;
     }
-    // TODO: Remove
-    if (!filename.includes('TADD')) {
-      return null;
-    }
     const archive = new MahjongArchive(filename);
     if (!archive.isValid) {
       return null;
