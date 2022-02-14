@@ -6,7 +6,7 @@ import { ContextBuilder } from './context-builder';
 import { ContextTrie } from './context-trie';
 import { isTranslatable, unescapeMultiline } from './string-utils';
 import { TranslationContext } from './translation-context';
-import { TranslationEntry } from './translation-entry';
+import { PatchFileCategory, TranslationEntry } from './translation-entry';
 import { TranslationString } from './translation-string';
 import { ReadWolftransContext } from '../wolf/read-wolftrans-context';
 import { PathResolver } from '../operation/path-resolver';
@@ -82,19 +82,19 @@ export class TranslationDict {
 
   public add(
     original: string,
-    level: string,
+    category: string | PatchFileCategory,
     patchFile: string,
     context: TranslationContext,
   ): boolean {
     if (!isTranslatable(original)) {
       return false;
     }
-    const key = TranslationEntry.ParseKey(original, level);
+    const key = TranslationEntry.ParseKey(original, category);
     let entry = this.entries[key];
     if (!entry) {
       entry = new TranslationEntry();
       entry.original = original;
-      entry.category = level;
+      entry.category = category;
       this.entries[key] = entry;
     }
     entry.setPatchFilePrefixIfEmpty(patchFile);
@@ -105,7 +105,7 @@ export class TranslationDict {
 
   public addTexts(
     ctxBuilder: ContextBuilder,
-    category: string,
+    category: string | PatchFileCategory,
     texts: TranslationString[],
   ) {
     for (let i = 0; i < texts.length; i++) {

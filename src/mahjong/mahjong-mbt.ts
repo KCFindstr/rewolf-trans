@@ -1,9 +1,13 @@
 import { FileCoder } from '../archive/file-coder';
+import { IAppendContext } from '../interfaces';
 import { logger } from '../logger';
+import { ContextBuilder } from '../translation/context-builder';
+import { TranslationDict } from '../translation/translation-dict';
+import { PatchFileCategory } from '../translation/translation-entry';
 import { TranslationString } from '../translation/translation-string';
 import { MC_MBT_HEADER } from './constants';
 
-class MahjongMBTScene {
+class MahjongMBTScene implements IAppendContext {
   startIndex: number;
   numStrings: number;
   nameOffset: number;
@@ -30,14 +34,18 @@ class MahjongMBTScene {
       return str;
     });
   }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    dict.addTexts(ctxBuilder, PatchFileCategory.Normal, this.strings);
+  }
 }
 
-export class MahjongMBT {
+export class MahjongMBT implements IAppendContext {
   numScenes: number;
   numStrings: number; // 1 more than total number of strings in all scenes
   sceneHeaderOffset: number;
   scenes: MahjongMBTScene[];
-  stringOffsets: number[];
+  stringOffsets: number[]; // Aligned to 4 bytes
 
   constructor(file: FileCoder) {
     file.expect(MC_MBT_HEADER);
@@ -50,9 +58,6 @@ export class MahjongMBT {
       }, scene header offset = ${this.sceneHeaderOffset.toString(16)}`,
     );
     this.stringOffsets = file.readUIntLEArray(() => this.numStrings);
-    this.stringOffsets.forEach((offset, i) => {
-      logger.debug(`String ${i} offset: ${offset.toString(16)}`);
-    });
 
     file.pushPtr(this.sceneHeaderOffset);
     this.scenes = file.readArray(
@@ -60,5 +65,13 @@ export class MahjongMBT {
       () => this.numScenes,
     );
     file.popPtr();
+  }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    this.scenes.forEach((scene, i) => {
+      ctxBuilder.enter(i, scene.name);
+      scene.appendContext(ctxBuilder, dict);
+      ctxBuilder.leave(i);
+    });
   }
 }

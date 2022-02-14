@@ -1,8 +1,10 @@
+import * as path from 'path';
 import { RewtArchive } from '../archive/rewt-archive';
 import { PathResolver } from '../operation/path-resolver';
+import { ContextBuilder } from '../translation/context-builder';
 import { TranslationDict } from '../translation/translation-dict';
 import { bufferStartsWith } from '../util';
-import { MC_DAT_HEADER } from './constants';
+import { MC_DAT_HEADER, MC_PATCH_TYPE } from './constants';
 import { MahjongDatEntry } from './mahjong-dat-entry';
 
 export class MahjongArchive extends RewtArchive {
@@ -49,7 +51,15 @@ export class MahjongArchive extends RewtArchive {
     throw new Error('Method not implemented.');
   }
 
-  generatePatch(_pathResolver: PathResolver, _dict: TranslationDict): void {
-    throw new Error('Method not implemented.');
+  generatePatch(pathResolver: PathResolver, dict: TranslationDict): void {
+    const pathInfo = path.parse(this.file_.filename);
+    const patchPath = path.join(pathInfo.dir, pathInfo.name);
+    const relativeFile = pathResolver.relativePath(patchPath);
+    const ctxBuilder = new ContextBuilder(MC_PATCH_TYPE.SCENE);
+    ctxBuilder.enterPatch(relativeFile);
+    for (const entry of this.entries_) {
+      entry.appendContext(ctxBuilder, dict);
+    }
+    ctxBuilder.leavePatch(relativeFile);
   }
 }

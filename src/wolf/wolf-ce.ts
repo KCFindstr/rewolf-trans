@@ -63,15 +63,18 @@ export class WolfCE extends RewtArchive implements ISerializable {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
     const relativeFile = pathResolver.relativePath(patchPath);
-    const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.CE);
+    const ctxBuilder = new ContextBuilder(CTX.STR.CE);
+    ctxBuilder.enterPatch(relativeFile);
     for (const event of this.events_) {
-      ctxBuilder.patchFile = path.join(
-        relativeFile,
-        `${addLeadingChar(event.id, 3, '0')}_${escapePath(event.name)}`,
-      );
+      const file = `${addLeadingChar(event.id, 3, '0')}_${escapePath(
+        event.name,
+      )}`;
+      ctxBuilder.enterPatch(file);
       ctxBuilder.enter(event.id);
       event.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(event.id);
+      ctxBuilder.leavePatch(file);
     }
+    ctxBuilder.leavePatch(relativeFile);
   }
 }

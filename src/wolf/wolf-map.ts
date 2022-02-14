@@ -95,13 +95,15 @@ export class WolfMap extends RewtArchive implements ISerializable {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
     const relativeFile = pathResolver.relativePath(patchPath);
-    const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.MPS);
+    const ctxBuilder = new ContextBuilder(CTX.STR.MPS);
     ctxBuilder.enter(pathInfo.name);
+    ctxBuilder.enterPatch(relativeFile);
     for (const event of this.events_) {
       ctxBuilder.enter(event.id);
       event.appendContext(ctxBuilder, dict);
       ctxBuilder.leave(event.id);
     }
+    ctxBuilder.leavePatch(relativeFile);
     ctxBuilder.leave(pathInfo.name);
   }
 

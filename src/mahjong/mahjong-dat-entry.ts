@@ -1,12 +1,15 @@
 import * as path from 'path';
 import { FileCoder } from '../archive/file-coder';
+import { IAppendContext } from '../interfaces';
 import { logger } from '../logger';
+import { ContextBuilder } from '../translation/context-builder';
+import { TranslationDict } from '../translation/translation-dict';
 import { bufferStartsWith } from '../util';
 import { MC_MBT_HEADER, MC_TEX_HEADER } from './constants';
 import { MahjongMBT } from './mahjong-mbt';
 import { MahjongTex } from './mahjong-tex';
 
-export class MahjongDatEntry {
+export class MahjongDatEntry implements IAppendContext {
   protected name_: string;
   protected unknown1_: number;
   protected unknown2_: number;
@@ -29,7 +32,10 @@ export class MahjongDatEntry {
   }
 
   constructor(file: FileCoder) {
-    this.filename = file.filename;
+    const parsed = path.parse(file.filename);
+    this.filename = path.join(parsed.dir, parsed.name);
+
+    // Read data
     this.name_ = file.readString(() => 40);
     this.unknown1_ = file.readByte();
     this.unknown2_ = file.readByte();
@@ -40,6 +46,8 @@ export class MahjongDatEntry {
     logger.debug(
       `[${this.name_}] ${this.offset_.toString(16)} ${this.size_.toString(16)}`,
     );
+
+    // Create subfile
     this.data = file.buffer.slice(this.offset_, this.offset_ + this.size_);
     this.subfile = new FileCoder(this.fullpath, undefined, this.data);
     if (bufferStartsWith(this.data, MC_TEX_HEADER)) {
@@ -47,5 +55,12 @@ export class MahjongDatEntry {
     } else if (bufferStartsWith(this.data, MC_MBT_HEADER)) {
       this.mbt_ = new MahjongMBT(this.subfile);
     }
+  }
+
+  appendContext(ctxBuilder: ContextBuilder, dict: TranslationDict): void {
+    if (!this.mbt_) {
+      return;
+    }
+    this.mbt_.appendContext(ctxBuilder, dict);
   }
 }

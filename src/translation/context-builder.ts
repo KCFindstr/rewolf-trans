@@ -1,3 +1,4 @@
+import * as path from 'path/posix';
 import { IString } from '../interfaces';
 import { TranslationContext } from './translation-context';
 import { TranslationString } from './translation-string';
@@ -34,18 +35,36 @@ export class ContextPathPart implements IString {
 
 export class ContextBuilder {
   public ctxArr: ContextPathPart[] = [];
+  public patchPath: string[] = [];
 
   /**
    * @param patchFile Prefix of patch file without extension.
    * @param type One of the context types. See CTX.STR
    */
-  constructor(public patchFile: string, public type: string) {}
+  constructor(public type: string) {}
+
+  get patchFile(): string {
+    return path.join(...this.patchPath);
+  }
+
+  enterPatch(patch: string) {
+    this.patchPath.push(patch);
+  }
+
+  leavePatch(patch: string) {
+    const last = this.patchPath.pop();
+    if (last !== patch) {
+      throw new Error(
+        `CtxBuilder: Leaving patch ${patch} but expected ${last}`,
+      );
+    }
+  }
 
   enter(ctx: string | number, name?: string) {
     this.ctxArr.push(new ContextPathPart(ctx.toString(), name));
   }
 
-  leave(ctx?: string | number) {
+  leave(ctx: string | number) {
     const last = this.ctxArr.pop();
     if (ctx && last.index !== ctx.toString()) {
       throw new Error(`CtxBuilder: Leaving ${ctx} but expected ${last.index}`);

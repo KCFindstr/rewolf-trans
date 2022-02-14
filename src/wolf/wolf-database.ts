@@ -102,18 +102,19 @@ export class WolfDatabase extends RewtArchive implements IProjectData {
     const pathInfo = path.parse(this.file_.filename);
     const patchPath = path.join(pathInfo.dir, pathInfo.name);
     const relativeFile = pathResolver.relativePath(patchPath);
-    const ctxBuilder = new ContextBuilder(relativeFile, CTX.STR.DB);
+    const ctxBuilder = new ContextBuilder(CTX.STR.DB);
     ctxBuilder.enter(pathInfo.name);
+    ctxBuilder.enterPatch(relativeFile);
     for (let i = 0; i < this.types_.length; i++) {
       const type = this.types_[i];
+      const file = escapePath(type.name.text);
       ctxBuilder.enter(i, type.name.text);
-      ctxBuilder.patchFile = path.join(
-        relativeFile,
-        escapePath(type.name.text),
-      );
+      ctxBuilder.enterPatch(file);
       type.appendContext(ctxBuilder, dict);
+      ctxBuilder.leavePatch(file);
       ctxBuilder.leave(i);
     }
+    ctxBuilder.leavePatch(relativeFile);
     ctxBuilder.leave(pathInfo.name);
   }
 }
