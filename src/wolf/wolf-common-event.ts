@@ -41,8 +41,8 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
     this.strArgs = file.readTStringArray();
     this.byteArgs = file.readByteArray();
     this.spOptionArgs = file.readArray((f) => f.readTStringArray());
-    this.spOptionValArgs = file.readArray((f) => f.readUIntArray());
-    this.intArgs = file.readUIntArray();
+    this.spOptionValArgs = file.readArray((f) => f.readUIntLEArray());
+    this.intArgs = file.readUIntLEArray();
     this.unknown3 = file.readBytes(5);
     this.cSelf = file.readTStringArray(() => 100);
     file.expectByte(WOLF_CE.INDICATOR3);

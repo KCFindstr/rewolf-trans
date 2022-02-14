@@ -12,13 +12,17 @@ const DefaultReadValueFn: ReadValueFn = (file) => file.readUIntLE();
 export class FileCoder {
   protected buffer_: Buffer;
   protected offset_: number;
+  protected offsetHistory_: number[] = [];
 
   constructor(
     protected readonly filename_: string,
     protected crypko_?: ICrypko,
+    buffer?: Buffer,
   ) {
     try {
-      const buffer = fs.readFileSync(filename_);
+      if (!buffer) {
+        buffer = fs.readFileSync(filename_);
+      }
       if (this.crypko_) {
         this.crypko_.setData(buffer);
         this.buffer_ = this.crypko_.decrypt();
@@ -64,12 +68,14 @@ export class FileCoder {
     return this.offset_;
   }
 
-  set offset(offset: number) {
-    this.assert(
-      offset >= 0 && offset <= this.buffer_.length,
-      `Invalid offset ${offset.toString(16)}`,
-    );
+  pushPtr(offset: number) {
+    this.offsetHistory_.push(this.offset_);
     this.offset_ = offset;
+  }
+
+  popPtr() {
+    this.assert(this.offsetHistory_.length > 0, 'Popping empty offset stack');
+    this.offset_ = this.offsetHistory_.pop();
   }
 
   expectByte(expected: number) {
@@ -111,8 +117,11 @@ export class FileCoder {
     );
   }
 
-  readString(encoding = GlobalOptions.readEncoding): string {
-    const len = this.readUIntLE();
+  readString(
+    readLenFn: ReadValueFn = DefaultReadValueFn,
+    encoding = GlobalOptions.readEncoding,
+  ): string {
+    const len = readLenFn(this);
     this.assert(len > 0, `Unexpected string length ${len}`);
     const bytes = this.readBytes(len - 1);
     this.expectByte(0);
@@ -120,8 +129,11 @@ export class FileCoder {
     return str;
   }
 
-  readTString(encoding = GlobalOptions.readEncoding): TranslationString {
-    return TranslationString.FromRawStr(this.readString(encoding));
+  readTString(
+    readLenFn: ReadValueFn = DefaultReadValueFn,
+    encoding = GlobalOptions.readEncoding,
+  ): TranslationString {
+    return TranslationString.FromRawStr(this.readString(readLenFn, encoding));
   }
 
   readBytes(count = 1): Buffer {
@@ -178,7 +190,7 @@ export class FileCoder {
     return ret;
   }
 
-  readUIntArray(readCountFn = DefaultReadValueFn): number[] {
+  readUIntLEArray(readCountFn = DefaultReadValueFn): number[] {
     return this.readArray((file) => file.readUIntLE(), readCountFn);
   }
 
@@ -186,12 +198,21 @@ export class FileCoder {
     return this.readArray((file) => file.readByte(), readCountFn);
   }
 
-  readStringArray(readCountFn = DefaultReadValueFn): string[] {
-    return this.readArray((file) => file.readString(), readCountFn);
+  readStringArray(
+    readCountFn = DefaultReadValueFn,
+    readStrLenFn = DefaultReadValueFn,
+  ): string[] {
+    return this.readArray((file) => file.readString(readStrLenFn), readCountFn);
   }
 
-  readTStringArray(readCountFn = DefaultReadValueFn): TranslationString[] {
-    return this.readArray((file) => file.readTString(), readCountFn);
+  readTStringArray(
+    readCountFn = DefaultReadValueFn,
+    readStrLenFn = DefaultReadValueFn,
+  ): TranslationString[] {
+    return this.readArray(
+      (file) => file.readTString(readStrLenFn),
+      readCountFn,
+    );
   }
 
   skip(count = 1) {

@@ -1,4 +1,5 @@
 import { RewtGame } from '../archive/rewt-game';
+import { MahjongGame } from '../mahjong/mahjong-game';
 import { WolfGame } from '../wolf/wolf-game';
 
 export type RewtGameConstructor = new (dataDir: string) => RewtGame;
@@ -29,3 +30,4 @@ export class RewtRegistry {
 export const GlobalRegistry = new RewtRegistry();
 
 GlobalRegistry.registerGame('wolf', WolfGame);
+GlobalRegistry.registerGame('mahjong', MahjongGame);

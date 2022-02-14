@@ -8,7 +8,7 @@ export class RouteCommand implements ISerializable {
   args: number[];
   constructor(file: FileCoder) {
     this.id = file.readByte();
-    this.args = file.readUIntArray((f) => f.readByte());
+    this.args = file.readUIntLEArray((f) => f.readByte());
     file.expect(WOLF_MAP.ROUTE_COMMAND_TERMINATOR);
   }
 

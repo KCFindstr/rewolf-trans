@@ -3,6 +3,7 @@ import { PathResolver } from '../operation/path-resolver';
 import { TranslationDict } from '../translation/translation-dict';
 import { bufferStartsWith } from '../util';
 import { MC_DAT_HEADER } from './constants';
+import { MahjongDatEntry } from './mahjong-dat-entry';
 
 export class MahjongArchive extends RewtArchive {
   protected isValid_ = false;
@@ -11,6 +12,7 @@ export class MahjongArchive extends RewtArchive {
   protected entryOffset_: number;
   protected dataOffset_: number;
   protected reserved2_: Buffer;
+  protected entries_: MahjongDatEntry[] = [];
 
   constructor(filename: string) {
     super(filename);
@@ -33,6 +35,14 @@ export class MahjongArchive extends RewtArchive {
     this.entryOffset_ = this.file_.readUIntLE();
     this.dataOffset_ = this.file_.readUIntLE();
     this.reserved2_ = this.file_.readBytes(32);
+
+    // Read entries
+    this.file_.pushPtr(this.entryOffset_);
+    for (let i = 0; i < this.numEntries_; i++) {
+      const entry = new MahjongDatEntry(this.file_);
+      this.entries_.push(entry);
+    }
+    this.file_.popPtr();
   }
 
   write(_pathResolver: PathResolver): void {

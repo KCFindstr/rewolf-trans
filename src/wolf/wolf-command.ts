@@ -410,7 +410,7 @@ export const CID_TO_CLASS: Record<number, WolfCommandType> = {
 export function createCommand(file: FileCoder): WolfCommand {
   const argCount = file.readByte();
   const cid = file.readUIntLE();
-  const args = file.readUIntArray(() => argCount - 1);
+  const args = file.readUIntLEArray(() => argCount - 1);
   const indent = file.readByte();
   const stringArgs = file.readTStringArray((f) => f.readByte());
   const terminator = file.readByte();

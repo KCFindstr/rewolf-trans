@@ -47,13 +47,13 @@ export class WolfType implements IProjectData, IAppendContext {
 
     // Args
     file
-      .readArray((f) => f.readUIntArray())
+      .readArray((f) => f.readUIntLEArray())
       .map((val, index) => {
         this.fields[index].args = val;
       });
 
     // Default value
-    file.readUIntArray().map((val, index) => {
+    file.readUIntLEArray().map((val, index) => {
       this.fields[index].defaultValue = val;
     });
   }
@@ -189,7 +189,7 @@ export class WolfData implements IProjectData, IAppendContext {
     this.fields = fields;
     const intValueSize = fields.filter((field) => field.isInt).length;
     const strValueSize = fields.filter((field) => field.isString).length;
-    this.intValues = file.readUIntArray(() => intValueSize);
+    this.intValues = file.readUIntLEArray(() => intValueSize);
     this.stringValues = file.readTStringArray(() => strValueSize);
   }
 
