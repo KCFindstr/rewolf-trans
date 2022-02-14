@@ -1,4 +1,3 @@
-import { CTX } from '../wolf/constants';
 import { TranslationContext } from './translation-context';
 
 export class ContextTrieNode {
@@ -31,16 +30,11 @@ export class ContextTrieNode {
 export class ContextTrie {
   protected root_ = new ContextTrieNode();
 
-  constructor() {
-    for (const str of Object.values(CTX.STR)) {
-      this.root_.children[str] = new ContextTrieNode();
-    }
-  }
-
   addCtx(ctx: TranslationContext) {
     let node = this.root_.children[ctx.type];
     if (!node) {
-      throw new Error(`Invalid context type: ${ctx.type}`);
+      node = new ContextTrieNode();
+      this.root_.children[ctx.type] = node;
     }
     for (const part of ctx.paths) {
       if (!node.children[part.index]) {
@@ -54,7 +48,7 @@ export class ContextTrie {
   getNode(ctx: TranslationContext): ContextTrieNode {
     let node = this.root_.children[ctx.type];
     if (!node) {
-      throw new Error(`Invalid context type: ${ctx.type}`);
+      return null;
     }
     for (const part of ctx.paths) {
       node = node.children[part.index];

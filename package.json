@@ -1,7 +1,7 @@
 {
   "name": "rewolf-trans",
   "repository": "github:KCFindstr/rewolf-trans",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Translate Wolf RPG games.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,10 +13,11 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "dev": "ts-node index.ts",
+    "prebuild": "rimraf dist",
     "build": "tsc",
     "installdeps": "npm i -g typescript @types/node",
     "lint": "eslint \"src/**/*.ts\" *.ts",
-    "prepublish": "tsc",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
