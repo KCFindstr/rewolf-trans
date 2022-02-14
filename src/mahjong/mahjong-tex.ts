@@ -24,7 +24,7 @@ export class MahjongFrameInfo {
   }
 }
 
-export class MahjongTexHeader {
+export class MahjongTex {
   protected numFrames_: number;
   protected frameInfoOffset_: number;
   protected frameDataOffset_: number;

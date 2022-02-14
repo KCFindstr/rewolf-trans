@@ -33,7 +33,7 @@ export class GenerateAction extends BaseAction {
     });
   }
 
-  protected override async onExecute(): Promise<void> {
+  protected override async execute(): Promise<void> {
     GeneratePatch(this.options_);
   }
 }

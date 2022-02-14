@@ -2,8 +2,9 @@ import * as path from 'path';
 import { FileCoder } from '../archive/file-coder';
 import { logger } from '../logger';
 import { bufferStartsWith } from '../util';
-import { MC_TEX_HEADER } from './constants';
-import { MahjongTexHeader } from './mahjong-tex';
+import { MC_MBT_HEADER, MC_TEX_HEADER } from './constants';
+import { MahjongMBT } from './mahjong-mbt';
+import { MahjongTex } from './mahjong-tex';
 
 export class MahjongDatEntry {
   protected name_: string;
@@ -13,7 +14,12 @@ export class MahjongDatEntry {
   protected offset_: number;
   protected size_: number;
   protected reserved1_: number[];
-  protected texHeader_: MahjongTexHeader;
+
+  // Possible data union
+  protected tex_: MahjongTex;
+  protected mbt_: MahjongMBT;
+
+  // Auxiliary variables
   public data: Buffer;
   public subfile: FileCoder;
   public filename: string;
@@ -37,9 +43,9 @@ export class MahjongDatEntry {
     this.data = file.buffer.slice(this.offset_, this.offset_ + this.size_);
     this.subfile = new FileCoder(this.fullpath, undefined, this.data);
     if (bufferStartsWith(this.data, MC_TEX_HEADER)) {
-      file.pushPtr(this.offset_);
-      this.texHeader_ = new MahjongTexHeader(this.subfile);
-      file.popPtr();
+      this.tex_ = new MahjongTex(this.subfile);
+    } else if (bufferStartsWith(this.data, MC_MBT_HEADER)) {
+      this.mbt_ = new MahjongMBT(this.subfile);
     }
   }
 }

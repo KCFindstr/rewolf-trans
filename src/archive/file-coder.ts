@@ -117,6 +117,13 @@ export class FileCoder {
     );
   }
 
+  // Read string until null terminator
+  readStringUnsafe(encoding = GlobalOptions.readEncoding) {
+    const start = this.offset;
+    while (this.readByte() !== 0);
+    return iconv.decode(this.buffer.slice(start, this.offset), encoding);
+  }
+
   readString(
     readLenFn: ReadValueFn = DefaultReadValueFn,
     encoding = GlobalOptions.readEncoding,
@@ -134,6 +141,10 @@ export class FileCoder {
     encoding = GlobalOptions.readEncoding,
   ): TranslationString {
     return TranslationString.FromRawStr(this.readString(readLenFn, encoding));
+  }
+
+  readTStringUnsafe(encoding = GlobalOptions.readEncoding): TranslationString {
+    return TranslationString.FromRawStr(this.readStringUnsafe(encoding));
   }
 
   readBytes(count = 1): Buffer {

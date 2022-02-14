@@ -33,7 +33,7 @@ export class ApplyAction extends BaseAction {
     });
   }
 
-  protected override async onExecute(): Promise<void> {
+  protected override async execute(): Promise<void> {
     ApplyPatch(this.options_);
   }
 }
