@@ -49,13 +49,13 @@ export class WolfEvent implements ISerializable, IAppendContext {
   }
 
   serialize(stream: BufferStream) {
-    stream.appendBuffer(WOLF_MAP.EVENT_START);
-    stream.appendInt(this.id);
+    stream.appendBytes(WOLF_MAP.EVENT_START);
+    stream.appendIntLE(this.id);
     stream.appendString(this.name);
-    stream.appendInt(this.x);
-    stream.appendInt(this.y);
-    stream.appendInt(this.pages.length);
-    stream.appendBuffer(WOLF_MAP.EVENT_END);
+    stream.appendIntLE(this.x);
+    stream.appendIntLE(this.y);
+    stream.appendIntLE(this.pages.length);
+    stream.appendBytes(WOLF_MAP.EVENT_END);
     for (const page of this.pages) {
       stream.appendByte(WOLF_MAP.PAGE_INDICATOR);
       page.serialize(stream);
@@ -122,19 +122,19 @@ export class WolfEventPage implements ISerializable, IAppendContext {
   }
 
   serialize(stream: BufferStream) {
-    stream.appendInt(this.unknown1);
+    stream.appendIntLE(this.unknown1);
     stream.appendString(this.graphicName);
     stream.appendByte(this.graphicDirection);
     stream.appendByte(this.graphicFrame);
     stream.appendByte(this.graphicOpacity);
     stream.appendByte(this.graphicRenderMode);
-    stream.appendBuffer(this.conditions);
-    stream.appendBuffer(this.movement);
+    stream.appendBytes(this.conditions);
+    stream.appendBytes(this.movement);
     stream.appendByte(this.flags);
     stream.appendByte(this.routeFlags);
     stream.appendSerializableArray(this.routes);
     stream.appendSerializableArray(this.commands);
-    stream.appendBuffer(WOLF_MAP.COMMAND_END);
+    stream.appendBytes(WOLF_MAP.COMMAND_END);
     stream.appendByte(this.shadowGraphicNum);
     stream.appendByte(this.collisionWidth);
     stream.appendByte(this.collisionHeight);

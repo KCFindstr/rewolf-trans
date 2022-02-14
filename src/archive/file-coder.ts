@@ -60,6 +60,18 @@ export class FileCoder {
     return this.crypko_;
   }
 
+  get offset() {
+    return this.offset_;
+  }
+
+  set offset(offset: number) {
+    this.assert(
+      offset >= 0 && offset <= this.buffer_.length,
+      `Invalid offset ${offset.toString(16)}`,
+    );
+    this.offset_ = offset;
+  }
+
   expectByte(expected: number) {
     this.assertLength(1);
     this.assert(

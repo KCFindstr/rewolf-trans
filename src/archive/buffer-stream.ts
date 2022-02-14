@@ -5,7 +5,7 @@ import { GlobalOptions } from '../operation/options';
 
 export type AppendValueFn = (stream: BufferStream, value: number) => void;
 const DefaultAppendValueFn = (stream: BufferStream, value: number) =>
-  stream.appendInt(value);
+  stream.appendIntLE(value);
 
 export class BufferStream {
   private data_: number[] = [];
@@ -14,7 +14,7 @@ export class BufferStream {
     return Buffer.from(this.data_);
   }
 
-  appendBuffer(buffer: Buffer) {
+  appendBytes(buffer: Buffer) {
     for (let i = 0; i < buffer.length; i++) {
       this.data_.push(buffer[i]);
     }
@@ -24,14 +24,14 @@ export class BufferStream {
     this.data_.push(byte & 0xff);
   }
 
-  appendShort(num: number) {
+  appendShortLE(num: number) {
     for (let i = 0; i < 2; i++) {
       this.data_.push(num & 0xff);
       num >>= 8;
     }
   }
 
-  appendInt(num: number) {
+  appendIntLE(num: number) {
     for (let i = 0; i < 4; i++) {
       this.data_.push(num & 0xff);
       num >>= 8;
@@ -40,8 +40,8 @@ export class BufferStream {
 
   appendString(str: string, encoding = GlobalOptions.writeEncoding) {
     const buffer = iconv.encode(str, encoding);
-    this.appendInt(buffer.length + 1);
-    this.appendBuffer(buffer);
+    this.appendIntLE(buffer.length + 1);
+    this.appendBytes(buffer);
     this.appendByte(0);
   }
 
@@ -81,10 +81,10 @@ export class BufferStream {
     );
   }
 
-  appendIntArray(ints: number[], appendCountFn = DefaultAppendValueFn) {
+  appendIntArrayLE(ints: number[], appendCountFn = DefaultAppendValueFn) {
     this.appendCustomArray(
       ints,
-      (stream, num) => stream.appendInt(num),
+      (stream, num) => stream.appendIntLE(num),
       appendCountFn,
     );
   }

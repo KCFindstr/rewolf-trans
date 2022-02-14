@@ -4,7 +4,7 @@ import { RewtCommandLine } from './src/cli/rewt-command-line';
 
 async function main() {
   try {
-    const rewt = new RewtCommandLine();
+    const rewt: RewtCommandLine = new RewtCommandLine();
     await rewt.execute();
   } catch (e) {
     logger.error(e.stack || e);

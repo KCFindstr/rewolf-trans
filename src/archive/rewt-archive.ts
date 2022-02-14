@@ -22,8 +22,8 @@ export abstract class RewtArchive implements IGeneratePatch, IWriteData {
     return this.file_.isValid;
   }
 
-  abstract write(pathResolver: PathResolver): void;
   abstract parse(): void;
+  abstract write(pathResolver: PathResolver): void;
   abstract generatePatch(
     pathResolver: PathResolver,
     dict: TranslationDict,

@@ -31,8 +31,8 @@ export class WolfCommand implements ISerializable, IAppendContext {
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.args.length + 1);
-    stream.appendInt(this.cid);
-    stream.appendIntArray(this.args, noop);
+    stream.appendIntLE(this.cid);
+    stream.appendIntArrayLE(this.args, noop);
     stream.appendByte(this.indent);
     stream.appendTStringArray(this.stringArgs, (s, value) =>
       s.appendByte(value),
@@ -211,7 +211,7 @@ export class MoveCommand extends WolfCommand {
 
   override writeTeminator(stream: BufferStream): void {
     stream.appendByte(WOLF_MAP.MOVE_COMMAND_TERMINATOR);
-    stream.appendBuffer(this.unknown);
+    stream.appendBytes(this.unknown);
     stream.appendByte(this.flags);
     stream.appendSerializableArray(this.routes);
   }

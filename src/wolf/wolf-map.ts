@@ -72,15 +72,15 @@ export class WolfMap extends RewtArchive implements ISerializable {
   serialize(stream: BufferStream) {
     this.file_.assert(this.isValid, 'Invalid map file.');
     if (this.mapType_ === WolfArchiveType.Jp) {
-      stream.appendBuffer(WOLF_JP_HEADER);
+      stream.appendBytes(WOLF_JP_HEADER);
     } else if (this.mapType_ === WolfArchiveType.En) {
-      stream.appendBuffer(WOLF_EN_HEADER);
+      stream.appendBytes(WOLF_EN_HEADER);
     }
-    stream.appendInt(this.tilesetId_);
-    stream.appendInt(this.width_);
-    stream.appendInt(this.height_);
-    stream.appendInt(this.events_.length);
-    stream.appendBuffer(this.tiles_);
+    stream.appendIntLE(this.tilesetId_);
+    stream.appendIntLE(this.width_);
+    stream.appendIntLE(this.height_);
+    stream.appendIntLE(this.events_.length);
+    stream.appendBytes(this.tiles_);
     for (const event of this.events_) {
       stream.appendByte(WOLF_MAP.EVENT_INDICATOR);
       event.serialize(stream);

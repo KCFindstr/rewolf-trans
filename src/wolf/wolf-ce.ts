@@ -30,7 +30,7 @@ export class WolfCE extends RewtArchive implements ISerializable {
   }
 
   serialize(stream: BufferStream): void {
-    stream.appendBuffer(WOLF_CE.HEADER);
+    stream.appendBytes(WOLF_CE.HEADER);
     stream.appendSerializableArray(this.events_);
     stream.appendByte(WOLF_CE.INDICATOR2);
   }

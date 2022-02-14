@@ -88,8 +88,8 @@ export class WolfType implements IProjectData, IAppendContext {
   }
 
   serializeData(stream: BufferStream): void {
-    stream.appendBuffer(WOLF_DAT.TYPE_SEPARATOR);
-    stream.appendInt(this.unknown1);
+    stream.appendBytes(WOLF_DAT.TYPE_SEPARATOR);
+    stream.appendIntLE(this.unknown1);
     stream.appendCustomArray(this.fields, (s, field) => field.serializeData(s));
     stream.appendCustomArray(this.data, (s, data) => data.serializeData(s));
   }
@@ -103,7 +103,7 @@ export class WolfType implements IProjectData, IAppendContext {
     stream.appendString(this.description);
 
     // Misc field data
-    stream.appendInt(this.fieldTypeCount);
+    stream.appendIntLE(this.fieldTypeCount);
     this.fields.forEach((field) => stream.appendByte(field.type));
     for (let i = this.fields.length; i < this.fieldTypeCount; i++) {
       stream.appendByte(0);
@@ -115,10 +115,10 @@ export class WolfType implements IProjectData, IAppendContext {
     });
 
     stream.appendCustomArray(this.fields, (s, field) => {
-      s.appendIntArray(field.args);
+      s.appendIntArrayLE(field.args);
     });
 
-    stream.appendIntArray(this.fields.map((field) => field.defaultValue));
+    stream.appendIntArrayLE(this.fields.map((field) => field.defaultValue));
   }
 }
 
@@ -160,7 +160,7 @@ export class WolfField implements IProjectData, IAppendContext {
   }
 
   serializeData(stream: BufferStream): void {
-    stream.appendInt(this.indexInfo);
+    stream.appendIntLE(this.indexInfo);
   }
 
   serializeProject(stream: BufferStream): void {
@@ -194,7 +194,7 @@ export class WolfData implements IProjectData, IAppendContext {
   }
 
   serializeData(stream: BufferStream): void {
-    stream.appendIntArray(this.intValues, noop);
+    stream.appendIntArrayLE(this.intValues, noop);
     stream.appendTStringArray(this.stringValues, noop);
   }
 

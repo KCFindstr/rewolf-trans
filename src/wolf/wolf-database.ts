@@ -44,7 +44,7 @@ export class WolfDatabase extends RewtArchive implements IProjectData {
     if (this.isEncrypted) {
       stream.appendByte(this.unknownEncrypted1_);
     } else {
-      stream.appendBuffer(WOLF_DAT.HEADER);
+      stream.appendBytes(WOLF_DAT.HEADER);
     }
     stream.appendCustomArray(this.types_, (s, type) => type.serializeData(s));
     stream.appendByte(WOLF_DAT.END);

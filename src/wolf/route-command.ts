@@ -14,7 +14,7 @@ export class RouteCommand implements ISerializable {
 
   serialize(stream: BufferStream): void {
     stream.appendByte(this.id);
-    stream.appendIntArray(this.args, (s, val) => s.appendByte(val));
-    stream.appendBuffer(WOLF_MAP.ROUTE_COMMAND_TERMINATOR);
+    stream.appendIntArrayLE(this.args, (s, val) => s.appendByte(val));
+    stream.appendBytes(WOLF_MAP.ROUTE_COMMAND_TERMINATOR);
   }
 }

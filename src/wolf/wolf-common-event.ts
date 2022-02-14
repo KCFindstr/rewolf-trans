@@ -62,9 +62,9 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
 
   serialize(stream: BufferStream): void {
     stream.appendByte(WOLF_CE.INDICATOR1);
-    stream.appendInt(this.id);
-    stream.appendInt(this.unknown1);
-    stream.appendBuffer(this.unknown2);
+    stream.appendIntLE(this.id);
+    stream.appendIntLE(this.unknown1);
+    stream.appendBytes(this.unknown2);
     stream.appendString(this.name);
     stream.appendSerializableArray(this.commands);
     stream.appendString(this.unknown6);
@@ -76,17 +76,17 @@ export class WolfCommonEvent implements ISerializable, IAppendContext {
       s.appendTStringArray(arr);
     });
     stream.appendCustomArray(this.spOptionValArgs, (s, arr) => {
-      s.appendIntArray(arr);
+      s.appendIntArrayLE(arr);
     });
-    stream.appendIntArray(this.intArgs);
-    stream.appendBuffer(this.unknown3);
+    stream.appendIntArrayLE(this.intArgs);
+    stream.appendBytes(this.unknown3);
     stream.appendTStringArray(this.cSelf, noop);
     stream.appendByte(WOLF_CE.INDICATOR3);
     stream.appendString(this.unknown4);
     if (this.unknown5) {
       stream.appendByte(WOLF_CE.INDICATOR4);
       stream.appendString(this.unknown5);
-      stream.appendInt(this.unknown7);
+      stream.appendIntLE(this.unknown7);
       stream.appendByte(WOLF_CE.INDICATOR4);
     } else {
       stream.appendByte(WOLF_CE.INDICATOR3);
