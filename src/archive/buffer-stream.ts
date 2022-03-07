@@ -38,7 +38,7 @@ export class BufferStream {
     }
   }
 
-  appendString(str: string, encoding = GlobalOptions.writeEncoding) {
+  appendString(str: string, encoding = GlobalOptions.readEncoding) {
     const buffer = iconv.encode(str, encoding);
     this.appendIntLE(buffer.length + 1);
     this.appendBytes(buffer);

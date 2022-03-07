@@ -12,14 +12,19 @@ This package is written in [TypeScript](https://www.typescriptlang.org/) and can
 - Works both as a command line tool and a NodeJS package.
 - Extensible design.
 
-## Breaking Changes
+## Change Log
 This tool is still in development phase and breaking changes happen. In most cases, you can run a regeneration of the patch files while reading from your working patch files to fix them and keep most of your work unchanged. Please do this ASAP since backward compatibility might get removed in future versions.
 
-### 0.1.6
+***Breaking changes are marked in \* .***
+
+### 0.1.7
+- Fixed a bug that caused some strings to be unexpectedly written in write encoding. Because of this, 0.1.6 might be unusable.
+
+### 0.1.6 *
 - Wolf command names no longer serve as context key since they do not help with locating the string. A regeneration of patch files is required to fix this while preserving all existing translations.
 - Changed command line argument format. If you use a script to generate patch files, please switch to the new format.
 
-### 0.1.5
+### 0.1.5 *
 - Changed the way to patch context names. Your already translated context names (but not the content string!) will be lost after regenerating the patch files.
 
 ## Installation
