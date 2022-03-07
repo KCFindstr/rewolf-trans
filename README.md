@@ -17,7 +17,7 @@ This tool is still in development phase and breaking changes happen. In most cas
 
 ***Breaking changes are marked in \* .***
 
-### 0.1.7
+### 0.1.8
 - Fixed a bug that caused some strings to be unexpectedly written in write encoding. Because of this, 0.1.6 might be unusable.
 
 ### 0.1.6 *
